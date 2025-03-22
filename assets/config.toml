@@ -1,0 +1,6 @@
+[train]
+rail_speed = 5.0
+offrail_speed = 3.0
+acceleration = 10.0
+deceleration = 20.0
+wagon_size = [2.0, 1.0]

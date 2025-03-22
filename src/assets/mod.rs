@@ -40,7 +40,30 @@ fn load_gif(
 }
 
 #[derive(geng::asset::Load)]
-pub struct Assets {}
+pub struct Assets {
+    pub config: crate::model::Config,
+    pub sprites: SpriteAssets,
+    pub shaders: ShaderAssets,
+    pub fonts: FontAssets,
+}
+
+#[derive(geng::asset::Load)]
+pub struct SpriteAssets {
+    pub locomotive: Rc<PixelTexture>,
+}
+
+#[derive(geng::asset::Load)]
+pub struct ShaderAssets {
+    pub texture: Rc<ugli::Program>,
+    pub solid: Rc<ugli::Program>,
+    pub ellipse: Rc<ugli::Program>,
+}
+
+#[derive(geng::asset::Load)]
+pub struct FontAssets {
+    pub default: Rc<Font>,
+    pub pixel: Rc<Font>,
+}
 
 impl Assets {
     pub async fn load(manager: &geng::asset::Manager) -> anyhow::Result<Self> {

@@ -56,25 +56,22 @@ impl GameRender {
 
         // Train
         for block in &model.train.blocks {
-            let shape = match block.collider.shape {
+            let target = match block.collider.shape {
                 Shape::Circle { .. } => todo!(),
                 Shape::Rectangle { width, height } => {
-                    Shape::rectangle(vec2(width, height) * vec2(1.6, 1.3).as_r32())
+                    Aabb2::point(block.collider.position.as_f32())
+                        .extend_symmetric(vec2(width, height).as_f32() / 2.0)
                 }
-            };
-            let collider = Collider {
-                shape,
-                ..block.collider
             };
             let draw =
                 geng_utils::texture::DrawTexture::new(&self.context.assets.sprites.locomotive)
-                    .fit(collider.compute_aabb().map(R32::as_f32), vec2::splat(0.5));
+                    .fit(target, vec2::splat(0.5));
             self.context.geng.draw2d().draw2d(
                 framebuffer,
                 &model.camera,
                 &draw2d::TexturedQuad::unit(draw.texture)
                     .scale(draw.target.size() / 2.0)
-                    .rotate(collider.rotation.map(R32::as_f32) - Angle::from_degrees(90.0))
+                    .rotate(block.collider.rotation.map(R32::as_f32) - Angle::from_degrees(90.0))
                     .translate(draw.target.center()),
             );
 

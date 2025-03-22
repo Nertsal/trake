@@ -12,7 +12,7 @@ pub type FloatTime = R32;
 #[derive(Debug, Clone)]
 pub struct Train {
     pub head_velocity: vec2<Coord>,
-    pub blocks: Vec<TrainBlock>,
+    pub blocks: VecDeque<TrainBlock>,
 }
 
 #[derive(Debug, Clone)]
@@ -75,7 +75,7 @@ pub struct Connections {
     pub top: bool,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct RailOrientation {
     pub kind: RailKind,
     pub rotation: usize,
@@ -123,14 +123,15 @@ impl Model {
                 fov: 16.0,
             },
             train: Train {
-                head_velocity: vec2::ZERO,
+                head_velocity: vec2(1.0, 0.0).as_r32(),
                 blocks: vec![TrainBlock {
                     collider: Collider::aabb(
                         Aabb2::point(vec2::ZERO)
                             .extend_symmetric(config.train.wagon_size / r32(2.0)),
                     ),
                     kind: TrainBlockKind::Locomotive,
-                }],
+                }]
+                .into(),
             },
             rails: vec![],
             grid: Grid {

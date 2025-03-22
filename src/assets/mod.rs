@@ -1,8 +1,8 @@
 mod font;
 
-use std::path::PathBuf;
-
 pub use self::font::*;
+
+use std::path::PathBuf;
 
 use geng::prelude::*;
 use geng_utils::gif::GifFrame;
@@ -50,6 +50,8 @@ pub struct Assets {
 #[derive(geng::asset::Load)]
 pub struct SpriteAssets {
     pub locomotive: Rc<PixelTexture>,
+    pub rail_straight: Rc<PixelTexture>,
+    pub rail_left: Rc<PixelTexture>,
 }
 
 #[derive(geng::asset::Load)]

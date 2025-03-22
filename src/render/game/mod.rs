@@ -37,6 +37,24 @@ impl GameRender {
         options: &GameRenderOptions,
         framebuffer: &mut ugli::Framebuffer,
     ) {
+        // Rails
+        for rail in &model.rails {
+            let position = model.grid.grid_to_world(rail.position);
+            let texture = match rail.orientation.kind {
+                RailKind::Straight => &self.context.assets.sprites.rail_straight,
+                RailKind::Left => &self.context.assets.sprites.rail_left,
+            };
+            self.context.geng.draw2d().draw2d(
+                framebuffer,
+                &model.camera,
+                &draw2d::TexturedQuad::unit(&***texture)
+                    .scale(model.grid.cell_size.as_f32() / 2.0)
+                    .rotate(Angle::from_degrees(90.0) * (rail.orientation.rotation as f32 - 1.0))
+                    .translate(position.as_f32()),
+            );
+        }
+
+        // Train
         for block in &model.train.blocks {
             let shape = match block.collider.shape {
                 Shape::Circle { .. } => todo!(),
@@ -55,7 +73,7 @@ impl GameRender {
                 framebuffer,
                 &model.camera,
                 &draw2d::TexturedQuad::unit(draw.texture)
-                    .scale(draw.target.size())
+                    .scale(draw.target.size() / 2.0)
                     .rotate(collider.rotation.map(R32::as_f32) - Angle::from_degrees(90.0))
                     .translate(draw.target.center()),
             );

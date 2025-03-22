@@ -12,6 +12,45 @@ pub struct Collision {
     pub penetration: Coord,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(default)]
+pub struct Transform {
+    pub translation: vec2<Coord>,
+    pub rotation: Angle<Coord>,
+    pub scale: Coord,
+}
+
+impl Transform {
+    pub fn identity() -> Self {
+        Self {
+            translation: vec2::ZERO,
+            rotation: Angle::ZERO,
+            scale: Coord::ONE,
+        }
+    }
+
+    pub fn scale(scale: impl Float) -> Self {
+        Self {
+            scale: scale.as_r32(),
+            ..Self::identity()
+        }
+    }
+
+    pub fn lerp(&self, target: &Self, t: FloatTime) -> Self {
+        Self {
+            translation: self.translation + (target.translation - self.translation) * t,
+            rotation: self.rotation + self.rotation.angle_to(target.rotation) * t,
+            scale: self.scale + (target.scale - self.scale) * t,
+        }
+    }
+}
+
+impl Default for Transform {
+    fn default() -> Self {
+        Self::identity()
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Collider {
     pub position: vec2<Coord>,
@@ -19,7 +58,6 @@ pub struct Collider {
     pub shape: Shape,
 }
 
-#[allow(dead_code)]
 impl Collider {
     pub fn new(position: vec2<Coord>, shape: Shape) -> Self {
         Self {

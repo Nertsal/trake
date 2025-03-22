@@ -6,6 +6,7 @@ pub use self::collider::*;
 use crate::prelude::*;
 
 pub type Coord = R32;
+pub type FloatTime = R32;
 
 #[derive(Debug, Clone)]
 pub struct Train {

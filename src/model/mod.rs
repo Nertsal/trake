@@ -94,7 +94,11 @@ impl Grid {
     }
 
     pub fn grid_to_world(&self, grid: vec2<ICoord>) -> vec2<Coord> {
-        grid.map(|x| r32(x as f32)) * self.cell_size + self.origin
+        self.gridf_to_world(grid.map(|x| r32(x as f32)))
+    }
+
+    pub fn gridf_to_world(&self, grid: vec2<Coord>) -> vec2<Coord> {
+        grid * self.cell_size + self.origin
     }
 }
 

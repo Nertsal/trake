@@ -109,7 +109,12 @@ impl geng::State for GameState {
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.framebuffer_size = framebuffer.size();
-        ugli::clear(framebuffer, Some(Color::BLACK), None, None);
+        ugli::clear(
+            framebuffer,
+            Some(Color::try_from("#250f54").unwrap()),
+            None,
+            None,
+        );
 
         self.render
             .draw_game(&self.model, &self.render_options, framebuffer);

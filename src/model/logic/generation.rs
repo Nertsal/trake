@@ -13,7 +13,7 @@ impl Model {
             target_speed: r32(1.0),
             train_speed: r32(1.0),
             blocks: vec![
-                TrainBlock::new_locomotive(&self.config.train, vec2::ZERO),
+                TrainBlock::new_locomotive(&self.config.train, vec2(2.0, 3.0).as_r32()),
                 TrainBlock::new_wagon(&self.config.train, vec2(-1.2, 0.0).as_r32()),
                 TrainBlock::new_wagon(&self.config.train, vec2(-2.4, 0.0).as_r32()),
             ]
@@ -30,7 +30,7 @@ impl Model {
                 wall: Some(Wall {
                     collider: Collider::aabb(
                         Aabb2::point(self.grid.grid_to_world(position))
-                            .extend_symmetric(self.grid.cell_size * r32(0.9)),
+                            .extend_symmetric(self.grid.cell_size * r32(0.9 / 2.0)),
                     ),
                 }),
             });

@@ -7,6 +7,7 @@ impl Model {
     pub fn update(&mut self, delta_time: FloatTime) {
         self.move_train(delta_time);
         self.collect_resources(delta_time);
+        self.collide_train(delta_time);
     }
 
     fn collect_resources(&mut self, _delta_time: FloatTime) {
@@ -31,6 +32,24 @@ impl Model {
                     log::info!("Collected: {:?}", res);
                 }
             }
+        }
+    }
+
+    fn collide_train(&mut self, _delta_time: FloatTime) {
+        let Some(head) = self.train.blocks.front_mut() else {
+            return;
+        };
+
+        let mut collision = false;
+        for wall in query!(self.grid_items, (&wall.Get.Some)) {
+            if head.collider.check(&wall.collider) {
+                collision = true;
+                break;
+            }
+        }
+
+        if collision {
+            self.train.blocks.pop_front();
         }
     }
 

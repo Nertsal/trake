@@ -9,7 +9,25 @@ impl Model {
     }
 
     fn collect_resources(&mut self, _delta_time: FloatTime) {
-        for wagon in &self.train.blocks {}
+        let mut collected = Vec::new();
+        for wagon in &self.train.blocks {
+            let grid_pos = self.grid.world_to_grid(wagon.collider.position);
+            for (res_id, &res_pos, _res) in
+                query!(self.grid_items, (id, &position, &resource.Get.Some))
+            {
+                if grid_pos == res_pos {
+                    collected.push(res_id);
+                }
+            }
+        }
+
+        for id in collected {
+            if let Some(item) = self.grid_items.remove(id) {
+                if let Some(res) = item.resource {
+                    log::info!("Collected: {:?}", res);
+                }
+            }
+        }
     }
 
     fn move_train(&mut self, delta_time: FloatTime) {

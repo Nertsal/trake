@@ -60,6 +60,13 @@ impl GameState {
             geng::Key::Digit2 => {
                 self.place_rail_kind = RailKind::Left;
             }
+            geng::Key::G => {
+                self.model.grid_items.insert(GridItem {
+                    position: self.cursor_grid_pos,
+                    rail: None,
+                    resource: Some(Resource::Coal),
+                });
+            }
             _ => {}
         }
     }

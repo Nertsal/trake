@@ -54,6 +54,21 @@ impl GameRender {
             );
         }
 
+        // Resources
+        for (&pos, resource) in query!(model.grid_items, (&position, &resource.Get.Some)) {
+            let position = model.grid.grid_to_world(pos);
+            let texture = match resource {
+                Resource::Coal => &self.context.assets.sprites.coal,
+            };
+            self.context.geng.draw2d().draw2d(
+                framebuffer,
+                &model.camera,
+                &draw2d::TexturedQuad::unit(&***texture)
+                    .scale(model.grid.cell_size.as_f32() / 2.0)
+                    .translate(position.as_f32()),
+            );
+        }
+
         // Train
         for block in &model.train.blocks {
             let target = match block.collider.shape {

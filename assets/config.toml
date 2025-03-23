@@ -1,9 +1,11 @@
+map_size = [10, 10]
+
 [train]
 rail_speed = 2.0
 offrail_speed = 1.3
 acceleration = 1.0
 deceleration = 2.0
-wagon_size = [2.0, 1.0]
+wagon_size = [1.8, 0.9]
 wagon_spacing = 0.1
 
 [resources.Coal]

@@ -60,6 +60,7 @@ pub enum Resource {
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
 #[load(serde = "toml")]
 pub struct Config {
+    pub map_size: vec2<ICoord>,
     pub train: TrainConfig,
     pub resources: HashMap<Resource, ResourceConfig>,
 }
@@ -140,11 +141,17 @@ impl From<RailOrientation> for Connections {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct Wall {
+    pub collider: Collider,
+}
+
 #[derive(SplitFields, Debug, Clone)]
 pub struct GridItem {
     pub position: vec2<ICoord>,
     pub rail: Option<Rail>,
     pub resource: Option<Resource>,
+    pub wall: Option<Wall>,
 }
 
 pub struct Model {
@@ -160,7 +167,7 @@ pub struct Model {
 
 impl Model {
     pub fn new(context: Context, config: Config) -> Self {
-        Self {
+        let mut model = Self {
             camera: Camera2d {
                 center: vec2::ZERO,
                 rotation: Angle::ZERO,
@@ -172,19 +179,16 @@ impl Model {
             },
 
             train: Train {
-                target_speed: r32(1.0),
-                train_speed: r32(1.0),
-                blocks: vec![
-                    TrainBlock::new_locomotive(&config.train, vec2::ZERO),
-                    TrainBlock::new_wagon(&config.train, vec2(-1.2, 0.0).as_r32()),
-                    TrainBlock::new_wagon(&config.train, vec2(-2.4, 0.0).as_r32()),
-                ]
-                .into(),
+                target_speed: r32(0.0),
+                train_speed: r32(0.0),
+                blocks: vec![].into(),
             },
             grid_items: default(),
 
             context,
             config,
-        }
+        };
+        model.init();
+        model
     }
 }

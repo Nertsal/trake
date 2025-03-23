@@ -65,6 +65,7 @@ impl GameState {
                     position: self.cursor_grid_pos,
                     rail: None,
                     resource: Some(Resource::Coal),
+                    wall: None,
                 });
             }
             _ => {}

@@ -10,6 +10,7 @@ impl Model {
             position,
             rail: Some(Rail { orientation }),
             resource: None,
+            wall: None,
         });
     }
 }

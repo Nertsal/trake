@@ -37,9 +37,31 @@ impl GameRender {
         options: &GameRenderOptions,
         framebuffer: &mut ugli::Framebuffer,
     ) {
+        for (&pos, wall) in query!(model.grid_items, (&position, &wall.Get.Some)) {
+            let position = model.grid.grid_to_world(pos);
+            let texture = &self.context.assets.sprites.wall;
+            self.context.geng.draw2d().draw2d(
+                framebuffer,
+                &model.camera,
+                &draw2d::TexturedQuad::unit(&***texture)
+                    .scale(model.grid.cell_size.as_f32() / 2.0)
+                    .translate(position.as_f32()),
+            );
+
+            if options.show_colliders {
+                self.util.draw_outline(
+                    &wall.collider,
+                    OUTLINE_WIDTH,
+                    Color::RED,
+                    &model.camera,
+                    framebuffer,
+                );
+            }
+        }
+
         // Rails
-        for (&rail_pos, rail) in query!(model.grid_items, (&position, &rail.Get.Some)) {
-            let position = model.grid.grid_to_world(rail_pos);
+        for (&pos, rail) in query!(model.grid_items, (&position, &rail.Get.Some)) {
+            let position = model.grid.grid_to_world(pos);
             let texture = match rail.orientation.kind {
                 RailKind::Straight => &self.context.assets.sprites.rail_straight,
                 RailKind::Left => &self.context.assets.sprites.rail_left,

@@ -17,6 +17,7 @@ pub struct Options {
     pub theme: Theme,
     pub master_volume: f32,
     pub music_volume: f32,
+    pub sfx_volume: f32,
 }
 
 impl Default for Options {
@@ -25,6 +26,7 @@ impl Default for Options {
             theme: Theme::default(),
             master_volume: 0.5,
             music_volume: 1.0,
+            sfx_volume: 1.0,
         }
     }
 }
@@ -79,5 +81,13 @@ impl Context {
 
         preferences::save(crate::OPTIONS_STORAGE, &options);
         *old = options;
+    }
+
+    pub fn play_sfx(&self, sfx: &geng::Sound) {
+        let options = self.get_options();
+        let volume = options.master_volume * options.sfx_volume;
+        let mut sfx = sfx.effect();
+        sfx.set_volume(volume);
+        sfx.play();
     }
 }

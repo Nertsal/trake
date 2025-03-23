@@ -148,6 +148,7 @@ pub struct GridItem {
 }
 
 pub struct Model {
+    pub context: Context,
     pub config: Config,
 
     pub camera: Camera2d,
@@ -158,7 +159,7 @@ pub struct Model {
 }
 
 impl Model {
-    pub fn new(config: Config) -> Self {
+    pub fn new(context: Context, config: Config) -> Self {
         Self {
             camera: Camera2d {
                 center: vec2::ZERO,
@@ -182,6 +183,7 @@ impl Model {
             },
             grid_items: default(),
 
+            context,
             config,
         }
     }

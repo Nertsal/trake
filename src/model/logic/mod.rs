@@ -21,6 +21,9 @@ impl Model {
             }
         }
 
+        if !collected.is_empty() {
+            self.context.play_sfx(&self.context.assets.sounds.choochoo);
+        }
         for id in collected {
             if let Some(item) = self.grid_items.remove(id) {
                 if let Some(res) = item.resource {

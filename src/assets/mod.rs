@@ -45,6 +45,7 @@ pub struct Assets {
     pub sprites: SpriteAssets,
     pub shaders: ShaderAssets,
     pub fonts: FontAssets,
+    pub sounds: SoundAssets,
 }
 
 #[derive(geng::asset::Load)]
@@ -67,6 +68,11 @@ pub struct ShaderAssets {
 pub struct FontAssets {
     pub default: Rc<Font>,
     pub pixel: Rc<Font>,
+}
+
+#[derive(geng::asset::Load)]
+pub struct SoundAssets {
+    pub choochoo: Rc<geng::Sound>,
 }
 
 impl Assets {

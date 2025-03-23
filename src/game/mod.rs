@@ -26,7 +26,7 @@ impl GameState {
             framebuffer_size: vec2(1, 1),
             render: GameRender::new(context.clone()),
             render_options: GameRenderOptions::default(),
-            model: Model::new(context.assets.config.clone()),
+            model: Model::new(context.clone(), context.assets.config.clone()),
 
             cursor_pos: vec2::ZERO,
             cursor_world_pos: vec2::ZERO,

@@ -28,31 +28,53 @@ impl Model {
                         if change.x < Coord::ZERO || change.y < Coord::ZERO {
                             if cons[opp_side] {
                                 // Continue forward
-                                // TODO: set speed
+                                self.train.target_speed = self.config.train.rail_speed;
                             } else {
                                 // Find the turn
                                 if cons[(opp_side + 1) % 4] {
                                     // Turn left
                                     self.train.head_velocity = self.train.head_velocity.rotate_90();
                                     head.collider.position = rail_pos;
+                                    self.train.target_speed = self.config.train.rail_speed;
                                 } else if cons[(opp_side + 3) % 4] {
                                     // Turn right
                                     self.train.head_velocity =
                                         -self.train.head_velocity.rotate_90();
                                     head.collider.position = rail_pos;
+                                    self.train.target_speed = self.config.train.rail_speed;
                                 } else {
                                     // No turn found - continue forward
+                                    self.train.target_speed = self.config.train.offrail_speed;
                                 }
-                                // TODO: set speed
                             }
                         }
                     } else {
                         // From a disconnected side - continue forward
                         // TODO: check speed
+                        if cons[opp_side] {
+                            self.train.target_speed = self.config.train.rail_speed;
+                        } else {
+                            self.train.target_speed = self.config.train.offrail_speed;
+                        }
                     }
                 }
+            } else {
+                self.train.target_speed = self.config.train.offrail_speed;
             }
 
+            // Acceleration
+            let current_speed = self.train.head_velocity.len();
+            let acceleration = if self.train.target_speed > current_speed {
+                self.config.train.acceleration
+            } else {
+                -self.config.train.deceleration
+            };
+            let speed = current_speed
+                + (acceleration * delta_time)
+                    .clamp_abs((self.train.target_speed - current_speed).abs());
+            self.train.head_velocity = self.train.head_velocity.normalize_or_zero() * speed;
+
+            // Movement
             head.collider.position += self.train.head_velocity * delta_time;
             head.collider.rotation = self.train.head_velocity.arg();
         }

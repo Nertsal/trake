@@ -11,6 +11,7 @@ pub type FloatTime = R32;
 
 #[derive(Debug, Clone)]
 pub struct Train {
+    pub target_speed: Coord,
     pub head_velocity: vec2<Coord>,
     pub blocks: VecDeque<TrainBlock>,
 }
@@ -123,6 +124,7 @@ impl Model {
                 fov: 16.0,
             },
             train: Train {
+                target_speed: r32(1.0),
                 head_velocity: vec2(1.0, 0.0).as_r32(),
                 blocks: vec![TrainBlock {
                     collider: Collider::aabb(

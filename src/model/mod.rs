@@ -12,7 +12,7 @@ pub type FloatTime = R32;
 #[derive(Debug, Clone)]
 pub struct Train {
     pub target_speed: Coord,
-    pub head_velocity: vec2<Coord>,
+    pub train_speed: Coord,
     pub blocks: VecDeque<TrainBlock>,
 }
 
@@ -20,6 +20,29 @@ pub struct Train {
 pub struct TrainBlock {
     pub kind: TrainBlockKind,
     pub collider: Collider,
+    pub entering_rail: bool,
+    pub path: VecDeque<vec2<Coord>>,
+}
+
+impl TrainBlock {
+    pub fn new_locomotive(config: &TrainConfig, position: vec2<Coord>) -> Self {
+        Self::new(config, position, TrainBlockKind::Locomotive)
+    }
+
+    pub fn new_wagon(config: &TrainConfig, position: vec2<Coord>) -> Self {
+        Self::new(config, position, TrainBlockKind::Wagon)
+    }
+
+    pub fn new(config: &TrainConfig, position: vec2<Coord>, kind: TrainBlockKind) -> Self {
+        Self {
+            collider: Collider::aabb(
+                Aabb2::point(position).extend_symmetric(config.wagon_size / r32(2.0)),
+            ),
+            kind,
+            entering_rail: false,
+            path: VecDeque::new(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -43,6 +66,7 @@ pub struct TrainConfig {
     pub acceleration: Coord,
     pub deceleration: Coord,
     pub wagon_size: vec2<Coord>,
+    pub wagon_spacing: Coord,
 }
 
 #[derive(Debug, Clone)]
@@ -125,14 +149,12 @@ impl Model {
             },
             train: Train {
                 target_speed: r32(1.0),
-                head_velocity: vec2(1.0, 0.0).as_r32(),
-                blocks: vec![TrainBlock {
-                    collider: Collider::aabb(
-                        Aabb2::point(vec2::ZERO)
-                            .extend_symmetric(config.train.wagon_size / r32(2.0)),
-                    ),
-                    kind: TrainBlockKind::Locomotive,
-                }]
+                train_speed: r32(1.0),
+                blocks: vec![
+                    TrainBlock::new_locomotive(&config.train, vec2::ZERO),
+                    TrainBlock::new_wagon(&config.train, vec2(-1.2, 0.0).as_r32()),
+                    TrainBlock::new_wagon(&config.train, vec2(-2.4, 0.0).as_r32()),
+                ]
                 .into(),
             },
             rails: vec![],

@@ -70,7 +70,7 @@ impl GameRender {
                 framebuffer,
                 &model.camera,
                 &draw2d::TexturedQuad::unit(draw.texture)
-                    .scale(draw.target.size() / 2.0)
+                    .scale(draw.target.size())
                     .rotate(block.collider.rotation.map(R32::as_f32) - Angle::from_degrees(90.0))
                     .translate(draw.target.center()),
             );

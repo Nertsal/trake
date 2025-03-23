@@ -32,10 +32,6 @@ impl Model {
                     wagon.entering_rail = true;
                 } else {
                     // Leaving the rail
-                    if wagon.entering_rail {
-                        dbg!(current_side);
-                        dbg!(&cons);
-                    }
                     // Crossed the center of the rail - turn
                     if wagon.entering_rail && !cons[current_side] {
                         // Find the turn
@@ -65,7 +61,7 @@ impl Model {
 
             on_rail
         };
-        //
+        
         // Returns whether the wagon is on a rail
         let move_wagon = |head: &mut TrainBlock, wagon: &mut TrainBlock| -> bool {
             let move_on = |from: vec2<Coord>,
@@ -128,7 +124,7 @@ impl Model {
         // Move wagons
         let mut on_rail = 0;
         let mut blocks = self.train.blocks.iter_mut();
-        if let Some(head) = blocks.next() {
+        if let Some(mut head) = blocks.next() {
             if move_head(head) {
                 on_rail += 1;
             }
@@ -137,6 +133,7 @@ impl Model {
                 if move_wagon(head, block) {
                     on_rail += 1;
                 }
+                head = block;
             }
         }
 

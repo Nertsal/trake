@@ -2,13 +2,14 @@ use super::*;
 
 impl Model {
     pub fn place_rail(&mut self, position: vec2<ICoord>, orientation: RailOrientation) {
-        if self.rails.iter().any(|rail| rail.position == position) {
+        if query!(self.grid_items, (&position)).any(|&pos| pos == position) {
             return;
         }
 
-        self.rails.push(Rail {
+        self.grid_items.insert(GridItem {
             position,
-            orientation,
+            rail: Some(Rail { orientation }),
+            resource: None,
         });
     }
 }

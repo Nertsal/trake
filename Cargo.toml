@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anymap3 = "1.0"
 async-compat = "0.2.4"
 async-executor = "1.13.1"
 clap = { version = "4.5.32", features = ["derive"] }
@@ -12,6 +13,7 @@ geng-utils = "0.3.0"
 parry2d = "0.13.5"
 rusttype = { version = "0.9.3", features = ["gpu_cache"] }
 serde = { version = "1.0.219", features = ["derive"] }
+stecs = { git = "https://github.com/nertsal/stecs", branch = "dynamic", version = "0.1.1" }
 
 [patch.crates-io]
 async-broadcast = { git = "https://github.com/kuviman/async-broadcast", branch = "fix-wasm" } # TODO: until https://github.com/smol-rs/async-broadcast/pull/47 is merged

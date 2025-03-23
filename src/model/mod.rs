@@ -8,6 +8,7 @@ use crate::prelude::*;
 pub type Coord = R32;
 pub type ICoord = i64;
 pub type FloatTime = R32;
+pub type Money = i64;
 
 #[derive(Debug, Clone)]
 pub struct Train {
@@ -51,12 +52,16 @@ pub enum TrainBlockKind {
     Wagon,
 }
 
-pub enum Resource {}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum Resource {
+    Coal,
+}
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
 #[load(serde = "toml")]
 pub struct Config {
     pub train: TrainConfig,
+    pub resources: HashMap<Resource, ResourceConfig>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -67,6 +72,12 @@ pub struct TrainConfig {
     pub deceleration: Coord,
     pub wagon_size: vec2<Coord>,
     pub wagon_spacing: Coord,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceConfig {
+    pub value: Money,
+    pub rarity: R32,
 }
 
 #[derive(Debug, Clone)]
@@ -88,7 +99,6 @@ impl Grid {
 
 #[derive(Debug, Clone)]
 pub struct Rail {
-    pub position: vec2<ICoord>,
     pub orientation: RailOrientation,
 }
 
@@ -130,13 +140,21 @@ impl From<RailOrientation> for Connections {
     }
 }
 
+#[derive(SplitFields, Debug, Clone)]
+pub struct GridItem {
+    pub position: vec2<ICoord>,
+    pub rail: Option<Rail>,
+    pub resource: Option<Resource>,
+}
+
 pub struct Model {
     pub config: Config,
 
     pub camera: Camera2d,
-    pub train: Train,
-    pub rails: Vec<Rail>,
     pub grid: Grid,
+
+    pub train: Train,
+    pub grid_items: StructOf<Arena<GridItem>>,
 }
 
 impl Model {
@@ -147,6 +165,11 @@ impl Model {
                 rotation: Angle::ZERO,
                 fov: 16.0,
             },
+            grid: Grid {
+                cell_size: vec2::splat(1.0).as_r32(),
+                origin: vec2::ZERO,
+            },
+
             train: Train {
                 target_speed: r32(1.0),
                 train_speed: r32(1.0),
@@ -157,11 +180,7 @@ impl Model {
                 ]
                 .into(),
             },
-            rails: vec![],
-            grid: Grid {
-                cell_size: vec2::splat(1.0).as_r32(),
-                origin: vec2::ZERO,
-            },
+            grid_items: default(),
 
             config,
         }

@@ -5,6 +5,11 @@ use super::*;
 impl Model {
     pub fn update(&mut self, delta_time: FloatTime) {
         self.move_train(delta_time);
+        self.collect_resources(delta_time);
+    }
+
+    fn collect_resources(&mut self, _delta_time: FloatTime) {
+        for wagon in &self.train.blocks {}
     }
 
     fn move_train(&mut self, delta_time: FloatTime) {
@@ -16,7 +21,10 @@ impl Model {
         let move_head = |wagon: &mut TrainBlock| -> bool {
             let move_dir = wagon.collider.rotation.unit_vec();
             let pos = self.grid.world_to_grid(wagon.collider.position);
-            let on_rail = if let Some(rail) = self.rails.iter().find(|rail| rail.position == pos) {
+            let on_rail = if let Some((_rail_pos, rail)) =
+                query!(self.grid_items, (&position, &rail.Get.Some))
+                    .find(|(&position, _)| position == pos)
+            {
                 // On a rail
                 let cons = Connections::from(rail.orientation);
                 let cons = [cons.right, cons.top, cons.left, cons.bottom];
@@ -61,7 +69,7 @@ impl Model {
 
             on_rail
         };
-        
+
         // Returns whether the wagon is on a rail
         let move_wagon = |head: &mut TrainBlock, wagon: &mut TrainBlock| -> bool {
             let move_on = |from: vec2<Coord>,
@@ -78,7 +86,10 @@ impl Model {
                 }
 
                 let pos = self.grid.world_to_grid(wagon.collider.position);
-                if let Some(rail) = self.rails.iter().find(|rail| rail.position == pos) {
+                if let Some((_rail_pos, rail)) =
+                    query!(self.grid_items, (&position, &rail.Get.Some))
+                        .find(|(&position, _)| position == pos)
+                {
                     let cons = Connections::from(rail.orientation);
                     let cons = [cons.right, cons.top, cons.left, cons.bottom];
 

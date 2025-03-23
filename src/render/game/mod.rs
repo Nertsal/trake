@@ -38,8 +38,8 @@ impl GameRender {
         framebuffer: &mut ugli::Framebuffer,
     ) {
         // Rails
-        for rail in &model.rails {
-            let position = model.grid.grid_to_world(rail.position);
+        for (&rail_pos, rail) in query!(model.grid_items, (&position, &rail.Get.Some)) {
+            let position = model.grid.grid_to_world(rail_pos);
             let texture = match rail.orientation.kind {
                 RailKind::Straight => &self.context.assets.sprites.rail_straight,
                 RailKind::Left => &self.context.assets.sprites.rail_left,

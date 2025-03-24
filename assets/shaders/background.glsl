@@ -28,7 +28,7 @@ void main() {
     
     vec3 world_pos = u_world_matrix * vec3(v_pos, 1.0);
     vec2 pos = world_pos.xy / world_pos.z;
-    float size = 2.0;
+    float size = 1.0;
     pos = floor(pos / size);
     float pattern_mask = mod(pos.x + mod(pos.y, 2.0), 2.0);
     gl_FragColor = tex_color + pattern_mask * vec4(vec3(0.05), 1.0);

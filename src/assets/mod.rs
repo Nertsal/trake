@@ -56,6 +56,7 @@ trake_derive::texture_atlas!(pub SpritesAtlas {
     plus_cent,
     speed,
     feather,
+    spiral,
 
     white,
     circle,
@@ -84,6 +85,7 @@ pub struct SpriteAssets {
     pub ghost_fuel: Rc<PixelTexture>,
     pub speed: Rc<PixelTexture>,
     pub feather_hat: Rc<PixelTexture>,
+    pub spiral: Rc<PixelTexture>,
 }
 
 #[derive(geng::asset::Load)]

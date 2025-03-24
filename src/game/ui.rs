@@ -53,6 +53,20 @@ impl GameUi {
             score.update(pos, context);
             score.text = format!("Score: {}", model.round_score).into();
 
+            let mut right = left_bar
+                .cut_top(font_size * 1.0)
+                .with_width(font_size * 3.0, 0.5);
+            let left = right.split_left(0.5);
+            context
+                .state
+                .get_root_or(|| IconWidget::new(atlas.coin()))
+                .update(left, context);
+            let money = context.state.get_root_or(|| TextWidget::new(""));
+            money.update(right, context);
+            money.text = format!("{}", model.money).into();
+
+            left_bar.cut_top(font_size);
+
             let pos = left_bar
                 .cut_top(font_size * 1.2)
                 .with_width(font_size * 4.0, 0.5);
@@ -103,6 +117,7 @@ impl GameUi {
                     },
                     Upgrade::Speed => atlas.speed(),
                     Upgrade::Feather => atlas.feather(),
+                    Upgrade::Turning => atlas.spiral(),
                 };
                 button.update(pos, context);
                 if button.state.clicked {

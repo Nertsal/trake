@@ -19,6 +19,8 @@ impl Model {
     }
 
     fn collect_resources(&mut self, _delta_time: FloatTime) {
+        let mut rng = thread_rng();
+
         let mut collected = Vec::new();
         for wagon in &self.train.blocks {
             let grid_pos = self.grid.world_to_grid(wagon.collider.position);
@@ -40,8 +42,18 @@ impl Model {
                 if let Some(res) = item.resource {
                     log::debug!("Collected: {:?}", res);
 
-                    if let Resource::PlusCent = res {
-                        self.round_score += self.round_score / 5;
+                    match res {
+                        Resource::PlusCent => {
+                            self.round_score += self.round_score / 5;
+                            self.money += self.money / 10;
+                        }
+                        Resource::Coin => {
+                            self.money += rng.gen_range(8..=13);
+                        }
+                        Resource::GhostFuel => {
+                            // TODO
+                        }
+                        _ => (),
                     }
 
                     if let Some(config) = self.config.resources.get(&res) {
@@ -76,6 +88,8 @@ impl Model {
 
         if collision {
             self.train.blocks.pop_front();
+            self.round_score -=
+                (self.round_score as f32 * thread_rng().gen_range(0.15..=0.25)).ceil() as Score;
         }
     }
 

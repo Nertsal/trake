@@ -51,6 +51,7 @@ impl Model {
             if self.quota_score >= self.current_quota {
                 // Next quota
                 self.quotas_completed += 1;
+                self.money += self.quota_score / 5;
                 let noise = rng.gen_range(0.9..=1.1);
                 self.current_quota +=
                     (20.0 * (self.quotas_completed.sqr() as f32 / 5.0) * noise) as Score;
@@ -61,6 +62,10 @@ impl Model {
                 todo!("you failed");
             }
         }
+        self.money += (self.round_score as f32 / 3.0 * rng.gen_range(0.9..=1.1)
+            + rng.gen_range(-1.0..=3.0))
+        .round()
+        .max(0.0) as Money;
         self.round_score = 0;
 
         // Depo
@@ -133,6 +138,7 @@ impl Model {
         let options = [
             (Upgrade::Speed, 15),
             (Upgrade::Feather, 10),
+            (Upgrade::Turning, 10),
             (Upgrade::Resource(Resource::GhostFuel), 20),
             (Upgrade::Resource(Resource::PlusCent), 20),
         ];

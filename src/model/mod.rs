@@ -199,6 +199,7 @@ pub enum Upgrade {
     Resource(Resource),
     Speed,
     Feather,
+    Turning,
 }
 
 #[derive(Debug, Clone)]

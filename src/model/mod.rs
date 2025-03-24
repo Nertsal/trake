@@ -77,6 +77,7 @@ pub enum Resource {
 #[load(serde = "toml")]
 pub struct Config {
     pub map_size: vec2<ICoord>,
+    pub deck: Deck,
     pub train: TrainConfig,
     pub resources: HashMap<Resource, ResourceConfig>,
 }
@@ -138,7 +139,7 @@ pub struct RailOrientation {
     pub rotation: usize,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RailKind {
     Straight,
     Left,
@@ -181,6 +182,12 @@ pub enum Phase {
     Resolution,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Deck {
+    pub resources: Vec<Resource>,
+    pub rails: Vec<RailKind>,
+}
+
 pub struct Model {
     pub context: Context,
     pub config: Config,
@@ -188,12 +195,14 @@ pub struct Model {
     pub camera: Camera2d,
     pub grid: Grid,
 
+    pub round: usize,
     pub total_score: Score,
     pub current_quota: Score,
     pub quota_score: Score,
     pub round_score: Score,
 
     pub phase: Phase,
+    pub deck: Deck,
     pub train: Train,
     pub grid_items: StructOf<Arena<GridItem>>,
 }
@@ -211,12 +220,14 @@ impl Model {
                 origin: vec2::ZERO,
             },
 
+            round: 0,
             total_score: 0,
             current_quota: 0,
             quota_score: 0,
             round_score: 0,
 
             phase: Phase::Setup,
+            deck: config.deck.clone(),
             train: Train {
                 target_speed: r32(0.0),
                 train_speed: r32(0.0),

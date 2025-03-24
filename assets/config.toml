@@ -1,5 +1,9 @@
 map_size = [10, 10]
 
+[deck]
+resources = ["Coal", "PlusCent"]
+rails = ["Straight", "Straight", "Left"]
+
 [train]
 turn_speed = 2.0
 rail_speed = 5.0

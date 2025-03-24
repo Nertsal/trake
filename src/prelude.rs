@@ -13,3 +13,4 @@ pub use time::Duration;
 pub use std::collections::VecDeque;
 
 pub type Color = Rgba<f32>;
+pub type Name = Arc<str>;

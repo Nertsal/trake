@@ -41,12 +41,23 @@ fn load_gif(
 
 #[derive(geng::asset::Load)]
 pub struct Assets {
+    pub atlas: Rc<SpritesAtlas>,
     pub config: crate::model::Config,
     pub sprites: SpriteAssets,
     pub shaders: ShaderAssets,
     pub fonts: FontAssets,
     pub sounds: SoundAssets,
 }
+
+trake_derive::texture_atlas!(pub SpritesAtlas {
+    white,
+    fill,
+    fill_thin,
+    fill_thinner,
+    border,
+    border_thin,
+    border_thinner,
+});
 
 #[derive(geng::asset::Load)]
 pub struct SpriteAssets {

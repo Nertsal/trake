@@ -1,9 +1,14 @@
+[workspace]
+members = ["crates/*"]
+resolver = "2"
+
 [package]
 name = "trake"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+trake_derive = { path = "crates/trake_derive" }
 anymap3 = "1.0"
 async-compat = "0.2.4"
 async-executor = "1.13.1"

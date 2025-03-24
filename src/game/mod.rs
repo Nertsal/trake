@@ -1,16 +1,26 @@
+mod actions;
+mod ui;
+
+use self::{actions::*, ui::GameUi};
+
 use crate::{
     model::*,
     prelude::*,
     render::game::{GameRender, GameRenderOptions},
+    ui::UiContext,
 };
 
 pub struct GameState {
     context: Context,
+    ui_context: UiContext,
+
+    render: GameRender,
+    model: Model,
+    ui: GameUi,
+    ui_focused: bool,
 
     framebuffer_size: vec2<usize>,
-    render: GameRender,
     render_options: GameRenderOptions,
-    model: Model,
     game_texture: ugli::Texture,
 
     cursor_pos: vec2<f64>,
@@ -27,10 +37,13 @@ impl GameState {
             geng_utils::texture::new_texture(context.geng.ugli(), crate::GAME_RESOLUTION);
         game_texture.set_filter(ugli::Filter::Nearest);
         Self {
-            framebuffer_size: vec2(1, 1),
             render: GameRender::new(context.clone()),
-            render_options: GameRenderOptions::default(),
             model: Model::new(context.clone(), context.assets.config.clone()),
+            ui: GameUi::new(),
+            ui_focused: false,
+
+            framebuffer_size: vec2(1, 1),
+            render_options: GameRenderOptions::default(),
             game_texture,
 
             cursor_pos: vec2::ZERO,
@@ -40,6 +53,7 @@ impl GameState {
             place_rail_kind: RailKind::Straight,
             place_rotation: 0,
 
+            ui_context: UiContext::new(context.clone()),
             context,
         }
     }
@@ -91,6 +105,7 @@ impl GameState {
 impl geng::State for GameState {
     fn update(&mut self, delta_time: f64) {
         let delta_time = r32(delta_time as f32);
+        self.ui_context.update(delta_time.as_f32());
 
         self.model.update(delta_time);
     }
@@ -101,10 +116,13 @@ impl geng::State for GameState {
             geng::Event::MousePress { button } => self.handle_mouse(button),
             geng::Event::CursorMove { position } => {
                 self.cursor_pos = position;
+
+                let game = self.ui.game.position;
+                let position = position.as_f32() - game.bottom_left();
                 self.cursor_world_pos = self
                     .model
                     .camera
-                    .screen_to_world(self.framebuffer_size.as_f32(), position.as_f32())
+                    .screen_to_world(game.size().as_f32(), position)
                     .as_r32();
                 self.cursor_grid_pos = self.model.grid.world_to_grid(self.cursor_world_pos);
             }
@@ -113,6 +131,19 @@ impl geng::State for GameState {
     }
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+        self.ui_context.state.frame_start();
+        self.ui_context.geometry.update(framebuffer.size());
+        let actions = self.ui.layout(
+            &self.model,
+            Aabb2::ZERO.extend_positive(framebuffer.size().as_f32()),
+            &mut self.ui_context,
+        );
+        self.ui_focused = !self.ui_context.can_focus();
+        self.ui_context.frame_end();
+        for action in actions {
+            self.execute(action);
+        }
+
         self.framebuffer_size = framebuffer.size();
         ugli::clear(
             framebuffer,
@@ -132,7 +163,7 @@ impl geng::State for GameState {
         self.render
             .draw_game(&self.model, &self.render_options, &mut game_buffer);
         geng_utils::texture::DrawTexture::new(&self.game_texture)
-            .fit_screen(vec2(0.5, 0.5), framebuffer)
+            .fit(self.ui.game.position, vec2(0.5, 0.5))
             .draw(&geng::PixelPerfectCamera, &self.context.geng, framebuffer);
 
         self.render.draw_game_ui(&self.model, framebuffer);

@@ -1,6 +1,11 @@
+mod texture_atlas;
+
+pub use self::texture_atlas::*;
+
 use crate::assets::Font;
 
 use geng::prelude::*;
+use geng_utils::conversions::*;
 
 pub fn smoothstep<T: Float>(t: T) -> T {
     T::from_f32(3.0) * t * t - T::from_f32(2.0) * t * t * t
@@ -47,4 +52,11 @@ pub fn world_to_screen(
         (pos.x + 1.0) / 2.0 * framebuffer_size.x,
         (pos.y + 1.0) / 2.0 * framebuffer_size.y,
     )
+}
+
+pub fn pixel_scale(framebuffer_size: vec2<usize>) -> f32 {
+    const TARGET_SIZE: vec2<usize> = crate::GAME_RESOLUTION;
+    let size = framebuffer_size.as_f32();
+    let ratio = size / TARGET_SIZE.as_f32();
+    ratio.x.min(ratio.y)
 }

@@ -37,6 +37,7 @@ impl Model {
 
     pub fn next_round(&mut self) {
         log::debug!("Round ended");
+        self.round_time = FloatTime::ZERO;
         let mut rng = thread_rng();
 
         // Score

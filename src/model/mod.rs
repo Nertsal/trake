@@ -87,6 +87,7 @@ pub struct Config {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrainConfig {
+    pub overtime_slowdown: Coord,
     pub turn_speed: Angle<Coord>,
     pub rail_speed: Coord,
     pub offrail_speed: Coord,
@@ -198,6 +199,9 @@ pub struct Model {
     pub camera: Camera2d,
     pub grid: Grid,
 
+    pub real_time: FloatTime,
+    pub round_time: FloatTime,
+
     pub quotas_completed: usize,
     pub total_score: Score,
     pub current_quota: Score,
@@ -218,12 +222,15 @@ impl Model {
             camera: Camera2d {
                 center: vec2::ZERO,
                 rotation: Angle::ZERO,
-                fov: 12.0,
+                fov: 16.0,
             },
             grid: Grid {
                 cell_size: vec2::splat(1.0).as_r32(),
                 origin: vec2::ZERO,
             },
+
+            real_time: FloatTime::ZERO,
+            round_time: FloatTime::ZERO,
 
             quotas_completed: 0,
             total_score: 0,

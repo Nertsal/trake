@@ -29,8 +29,7 @@ impl GameUi {
         context.layout_size = layout_size;
         context.screen = screen;
 
-        let mut left_bar = screen.cut_left(screen.width() / 3.0);
-        let bottom_bar = screen.cut_bottom(font_size * 6.0);
+        let mut left_bar = screen.cut_left(screen.width() / 2.5);
 
         self.game.update(screen, context);
 

@@ -5,9 +5,12 @@ use super::*;
 
 impl Model {
     pub fn update(&mut self, delta_time: FloatTime, player_input: PlayerInput) {
+        self.real_time += delta_time;
+
         match self.phase {
             Phase::Setup => {}
             Phase::Resolution => {
+                self.round_time += delta_time;
                 self.move_train(delta_time, &player_input);
                 self.collect_resources(delta_time);
                 self.collide_train(delta_time);
@@ -205,8 +208,10 @@ impl Model {
                 }
             } else {
                 // Turn by player input
-                wagon.collider.rotation +=
-                    self.config.train.turn_speed * player_input.turn * delta_time;
+                wagon.collider.rotation += self.config.train.turn_speed
+                    * player_input.turn
+                    * delta_time
+                    * self.train.train_speed.min(Coord::ONE);
 
                 false
             };
@@ -300,14 +305,18 @@ impl Model {
         self.train.target_speed = self.config.train.offrail_speed
             + (self.config.train.rail_speed - self.config.train.offrail_speed)
                 * r32(on_rail as f32 / self.train.blocks.len() as f32);
+        let slowdown_s = self.config.train.offrail_speed;
+        let slowdown_t = slowdown_s / self.config.train.overtime_slowdown;
+        let t = self.round_time / slowdown_t;
+        let slowdown = t * t * t * slowdown_s;
+        let target = (self.train.target_speed - slowdown).max(Coord::ZERO);
         let current_speed = self.train.train_speed;
-        let acceleration = if self.train.target_speed > current_speed {
+        let acceleration = if target > current_speed {
             self.config.train.acceleration
         } else {
             -self.config.train.deceleration
         };
-        self.train.train_speed = current_speed
-            + (acceleration * delta_time)
-                .clamp_abs((self.train.target_speed - current_speed).abs());
+        self.train.train_speed =
+            current_speed + (acceleration * delta_time).clamp_abs((target - current_speed).abs());
     }
 }

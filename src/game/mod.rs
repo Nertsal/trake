@@ -6,7 +6,10 @@ use self::{actions::*, ui::GameUi};
 use crate::{
     model::*,
     prelude::*,
-    render::game::{GameRender, GameRenderOptions},
+    render::{
+        game::{GameRender, GameRenderOptions},
+        SwapBuffer,
+    },
     ui::UiContext,
 };
 
@@ -23,6 +26,7 @@ pub struct Controls {
 pub struct GameState {
     context: Context,
     ui_context: UiContext,
+    unit_quad: ugli::VertexBuffer<draw2d::TexturedVertex>,
 
     render: GameRender,
     model: Model,
@@ -31,7 +35,8 @@ pub struct GameState {
 
     framebuffer_size: vec2<usize>,
     render_options: GameRenderOptions,
-    game_texture: ugli::Texture,
+    pixel_buffer: SwapBuffer,
+    post_buffer: SwapBuffer,
 
     cursor_pos: vec2<f64>,
     cursor_world_pos: vec2<Coord>,
@@ -44,9 +49,6 @@ pub struct GameState {
 
 impl GameState {
     pub fn new(context: Context) -> Self {
-        let mut game_texture =
-            geng_utils::texture::new_texture(context.geng.ugli(), crate::GAME_RESOLUTION);
-        game_texture.set_filter(ugli::Filter::Nearest);
         Self {
             render: GameRender::new(context.clone()),
             model: Model::new(context.clone(), context.assets.config.clone()),
@@ -55,7 +57,8 @@ impl GameState {
 
             framebuffer_size: vec2(1, 1),
             render_options: GameRenderOptions::default(),
-            game_texture,
+            pixel_buffer: SwapBuffer::new(context.geng.ugli(), crate::GAME_RESOLUTION),
+            post_buffer: SwapBuffer::new(context.geng.ugli(), vec2(1, 1)),
 
             cursor_pos: vec2::ZERO,
             cursor_world_pos: vec2::ZERO,
@@ -66,6 +69,7 @@ impl GameState {
             place_rotation: 0,
 
             ui_context: UiContext::new(context.clone()),
+            unit_quad: geng_utils::geometry::unit_quad_geometry(context.geng.ugli()),
             context,
         }
     }
@@ -160,6 +164,8 @@ impl geng::State for GameState {
     }
 
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
+        self.post_buffer.update_size(framebuffer.size());
+
         self.ui_context.state.frame_start();
         self.ui_context.geometry.update(framebuffer.size());
         let actions = self.ui.layout(
@@ -174,41 +180,76 @@ impl geng::State for GameState {
         }
 
         self.framebuffer_size = framebuffer.size();
-        ugli::clear(
-            framebuffer,
-            Some(Color::try_from("#250f54").unwrap()),
-            None,
-            None,
-        );
+        let bg_color = Color::try_from("#10273d").unwrap();
+        ugli::clear(framebuffer, Some(bg_color), None, None);
 
-        let mut game_buffer =
-            geng_utils::texture::attach_texture(&mut self.game_texture, self.context.geng.ugli());
-        ugli::clear(
-            &mut game_buffer,
-            Some(Color::try_from("#250f54").unwrap()),
-            None,
-            None,
-        );
+        let pixel_buffer = &mut self.pixel_buffer.active_draw();
+        ugli::clear(pixel_buffer, Some(bg_color), None, None);
         self.render
-            .draw_game(&self.model, &self.render_options, &mut game_buffer);
+            .draw_game(&self.model, &self.render_options, pixel_buffer);
+
+        let post_buffer = &mut self.post_buffer.active_draw();
+        ugli::clear(post_buffer, Some(bg_color), None, None);
+
         {
             // Pixel perfect
             let pos = self.ui.game.position.center();
-            let size = self.game_texture.size() * 3;
+            let size = self.pixel_buffer.size() * 3;
             let align = vec2(0.5, 0.5);
             let align_size = (size.as_f32() * align).map(f32::fract);
             let pos = pos.map(f32::floor) + align_size;
             let screen_aabb = Aabb2::point(pos).extend_symmetric(size.as_f32() / 2.0);
             self.context.geng.draw2d().textured_quad(
-                framebuffer,
+                post_buffer,
                 &geng::PixelPerfectCamera,
                 screen_aabb,
-                &self.game_texture,
+                &self.pixel_buffer.active,
                 Color::WHITE,
             );
         }
 
         self.render
-            .draw_game_ui(&self.model, &self.ui_context, framebuffer);
+            .draw_game_ui(&self.model, &self.ui_context, post_buffer);
+
+        // Background
+        {
+            self.post_buffer.swap();
+            let post_buffer = &mut geng_utils::texture::attach_texture(
+                &mut self.post_buffer.active,
+                self.context.geng.ugli(),
+            );
+            let world_matrix = (self
+                .model
+                .camera
+                .projection_matrix(post_buffer.size().as_f32())
+                * self.model.camera.view_matrix())
+            .inverse();
+            ugli::draw(
+                post_buffer,
+                &self.context.assets.shaders.background,
+                ugli::DrawMode::TriangleFan,
+                &self.unit_quad,
+                ugli::uniforms! {
+                    u_texture: &self.post_buffer.second,
+                    u_time: self.model.real_time.as_f32(),
+                    u_mask_color: bg_color,
+                    u_mask2_color: bg_color,
+                    u_world_matrix: world_matrix,
+                },
+                ugli::DrawParameters {
+                    blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                    ..default()
+                },
+            );
+        }
+
+        // Post
+        self.context.geng.draw2d().textured_quad(
+            framebuffer,
+            &geng::PixelPerfectCamera,
+            Aabb2::ZERO.extend_positive(framebuffer.size().as_f32()),
+            &self.post_buffer.active,
+            Color::WHITE,
+        );
     }
 }

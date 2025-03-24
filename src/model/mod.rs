@@ -12,6 +12,18 @@ pub type Money = i64;
 pub type Score = i64;
 
 #[derive(Debug, Clone)]
+pub struct PlayerInput {
+    pub turn: Coord,
+}
+
+#[allow(clippy::derivable_impls)]
+impl Default for PlayerInput {
+    fn default() -> Self {
+        Self { turn: Coord::ZERO }
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct Train {
     pub target_speed: Coord,
     pub train_speed: Coord,
@@ -69,6 +81,7 @@ pub struct Config {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrainConfig {
+    pub turn_speed: Angle<Coord>,
     pub rail_speed: Coord,
     pub offrail_speed: Coord,
     pub acceleration: Coord,

@@ -43,6 +43,7 @@ fn load_gif(
 pub struct Assets {
     pub atlas: Rc<SpritesAtlas>,
     pub config: crate::model::Config,
+    pub controls: crate::game::Controls,
     pub sprites: SpriteAssets,
     pub shaders: ShaderAssets,
     pub fonts: FontAssets,

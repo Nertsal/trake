@@ -10,6 +10,16 @@ use crate::{
     ui::UiContext,
 };
 
+use geng_utils::key::EventKey;
+
+#[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
+#[load(serde = "ron")]
+pub struct Controls {
+    pub turn_left: Vec<EventKey>,
+    pub turn_right: Vec<EventKey>,
+    pub launch: Vec<EventKey>,
+}
+
 pub struct GameState {
     context: Context,
     ui_context: UiContext,
@@ -27,6 +37,7 @@ pub struct GameState {
     cursor_world_pos: vec2<Coord>,
     cursor_grid_pos: vec2<ICoord>,
 
+    player_input: PlayerInput,
     place_rail_kind: RailKind,
     place_rotation: usize,
 }
@@ -50,6 +61,7 @@ impl GameState {
             cursor_world_pos: vec2::ZERO,
             cursor_grid_pos: vec2::ZERO,
 
+            player_input: PlayerInput::default(),
             place_rail_kind: RailKind::Straight,
             place_rotation: 0,
 
@@ -107,10 +119,23 @@ impl geng::State for GameState {
         let delta_time = r32(delta_time as f32);
         self.ui_context.update(delta_time.as_f32());
 
-        self.model.update(delta_time);
+        let mut input = std::mem::take(&mut self.player_input);
+        let controls = &self.context.assets.controls;
+        let window = self.context.geng.window();
+        if geng_utils::key::is_key_pressed(window, &controls.turn_left) {
+            input.turn += r32(1.0);
+        } else if geng_utils::key::is_key_pressed(window, &controls.turn_right) {
+            input.turn -= r32(1.0);
+        }
+        self.model.update(delta_time, input);
     }
 
     fn handle_event(&mut self, event: geng::Event) {
+        let controls = &self.context.assets.controls;
+        if geng_utils::key::is_event_press(&event, &controls.launch) {
+            self.execute(GameAction::LaunchTrain);
+        }
+
         match event {
             geng::Event::KeyPress { key } => self.handle_key(key),
             geng::Event::MousePress { button } => self.handle_mouse(button),

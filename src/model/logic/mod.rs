@@ -4,11 +4,11 @@ mod generation;
 use super::*;
 
 impl Model {
-    pub fn update(&mut self, delta_time: FloatTime) {
+    pub fn update(&mut self, delta_time: FloatTime, player_input: PlayerInput) {
         match self.phase {
             Phase::Setup => {}
             Phase::Resolution => {
-                self.move_train(delta_time);
+                self.move_train(delta_time, &player_input);
                 self.collect_resources(delta_time);
                 self.collide_train(delta_time);
             }
@@ -103,13 +103,13 @@ impl Model {
         });
     }
 
-    fn move_train(&mut self, delta_time: FloatTime) {
+    fn move_train(&mut self, delta_time: FloatTime, player_input: &PlayerInput) {
         if self.train.blocks.is_empty() {
             return;
         }
 
         // Returns whether the wagon is on a rail
-        let move_head = |wagon: &mut TrainBlock| -> bool {
+        let move_head = |wagon: &mut TrainBlock, player_input: &PlayerInput| -> bool {
             let move_dir = wagon.collider.rotation.unit_vec();
             let pos = self.grid.world_to_grid(wagon.collider.position);
             let on_rail = if let Some((_rail_pos, rail)) =
@@ -126,22 +126,33 @@ impl Model {
                     .round() as usize
                     % 4;
 
-                if vec2::dot(offset, move_dir) < Coord::ZERO {
+                let ninety = Angle::from_degrees(r32(90.0));
+                if cons[current_side] && vec2::dot(offset, move_dir) < Coord::ZERO {
                     // Entering the rail
+                    if !wagon.entering_rail {
+                        // Just entered
+                        // TODO: project position onto rail_dir
+                        wagon.path.push_front(wagon.collider.position);
+                    }
                     wagon.entering_rail = true;
+                    // Align train with the rail
+                    let opp_side = (current_side + 2) % 4;
+                    wagon.collider.rotation = ninety * r32(opp_side as f32)
                 } else {
                     // Leaving the rail
+                    let rail_dir = ninety * r32(current_side as f32);
+
                     // Crossed the center of the rail - turn
                     if wagon.entering_rail && !cons[current_side] {
                         // Find the turn
                         if cons[(current_side + 1) % 4] {
                             // Turn left
-                            wagon.collider.rotation += Angle::from_degrees(r32(90.0));
+                            wagon.collider.rotation = rail_dir + ninety;
                             wagon.collider.position = rail_pos;
                             wagon.path.push_front(rail_pos);
                         } else if cons[(current_side + 3) % 4] {
                             // Turn right
-                            wagon.collider.rotation -= Angle::from_degrees(r32(90.0));
+                            wagon.collider.rotation = rail_dir - ninety;
                             wagon.collider.position = rail_pos;
                             wagon.path.push_front(rail_pos);
                         }
@@ -151,6 +162,10 @@ impl Model {
 
                 cons[current_side]
             } else {
+                // Turn by player input
+                wagon.collider.rotation +=
+                    self.config.train.turn_speed * player_input.turn * delta_time;
+
                 false
             };
 
@@ -227,7 +242,7 @@ impl Model {
         let mut on_rail = 0;
         let mut blocks = self.train.blocks.iter_mut();
         if let Some(mut head) = blocks.next() {
-            if move_head(head) {
+            if move_head(head, player_input) {
                 on_rail += 1;
             }
 

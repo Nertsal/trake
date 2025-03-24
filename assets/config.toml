@@ -1,7 +1,8 @@
 map_size = [10, 10]
+depo_size = [1.6, 3.2]
 
 [deck]
-resources = ["Coal", "PlusCent"]
+resources = ["Coal", "PlusCent", "Diamond"]
 rails = ["Straight", "Straight", "Left"]
 
 [train]
@@ -16,6 +17,10 @@ wagon_spacing = 0.1
 [resources.Coal]
 value = 5
 rarity = 1
+
+[resources.Diamond]
+value = 20
+rarity = 5
 
 [resources.PlusCent]
 value = 0

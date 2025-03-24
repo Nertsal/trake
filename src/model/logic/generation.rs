@@ -36,21 +36,48 @@ impl Model {
     }
 
     pub fn next_round(&mut self) {
+        log::debug!("Round ended");
         let mut rng = thread_rng();
 
         // Score
-        self.round += 1;
         self.total_score += self.round_score;
         self.quota_score += self.round_score;
         self.round_score = 0;
+        if self.quota_score >= self.current_quota {
+            // Next quota
+            self.quotas_completed += 1;
+            let noise = rng.gen_range(0.9..=1.1);
+            self.current_quota +=
+                (100.0 * (self.quotas_completed.sqr() as f32 / 16.0) * noise) as Score;
+        } else if self.quota_day >= 2 {
+            // Quota failed
+            todo!("you failed");
+        } else {
+            // Next day
+            self.quota_day += 1;
+        }
+
+        // Depo
+        let size = self.config.depo_size;
+        let grid_min = self.grid.gridf_to_world(vec2(0.5, 0.5).as_r32());
+        let grid_max = self
+            .grid
+            .gridf_to_world(self.config.map_size.map(|x| x as f32 - 0.5).as_r32());
+        let y = rng.gen_range(grid_min.y..=grid_max.y - size.y);
+        self.depo = Collider::aabb(
+            Aabb2::point(vec2(grid_min.x, y))
+                .extend_left(size.x)
+                .extend_up(size.y),
+        );
 
         // Train
         self.train = Train {
+            in_depo: true,
             target_speed: r32(0.0),
             train_speed: r32(0.0),
             blocks: vec![TrainBlock::new_locomotive(
                 &self.config.train,
-                vec2(2.0, 3.0).as_r32(),
+                self.depo.position,
             )]
             .into(),
         };

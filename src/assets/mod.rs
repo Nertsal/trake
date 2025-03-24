@@ -66,9 +66,10 @@ pub struct SpriteAssets {
     pub rail_straight: Rc<PixelTexture>,
     pub rail_left: Rc<PixelTexture>,
     pub coal: Rc<PixelTexture>,
+    pub diamond: Rc<PixelTexture>,
     pub plus_cent: Rc<PixelTexture>,
-    // pub diamond: Rc<PixelTexture>,
     pub wall: Rc<PixelTexture>,
+    pub depo: Rc<PixelTexture>,
 }
 
 #[derive(geng::asset::Load)]

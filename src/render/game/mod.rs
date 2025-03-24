@@ -63,27 +63,24 @@ impl GameRender {
             &model.camera,
             framebuffer,
         );
-        // for (&pos, wall) in query!(model.grid_items, (&position, &wall.Get.Some)) {
-        //     let position = model.grid.grid_to_world(pos);
-        //     let texture = &self.context.assets.sprites.wall;
-        //     self.context.geng.draw2d().draw2d(
-        //         framebuffer,
-        //         &model.camera,
-        //         &draw2d::TexturedQuad::unit(&***texture)
-        //             .scale(model.grid.cell_size.as_f32() / 2.0)
-        //             .translate(position.as_f32()),
-        //     );
 
-        //     if options.show_colliders {
-        //         self.util.draw_outline(
-        //             &wall.collider,
-        //             OUTLINE_WIDTH,
-        //             Color::RED,
-        //             &model.camera,
-        //             framebuffer,
-        //         );
-        //     }
-        // }
+        // Depo
+        {
+            let depo = &model.depo;
+            let size = match depo.shape {
+                Shape::Circle { .. } => todo!(),
+                Shape::Rectangle { width, height } => vec2(width, height),
+            };
+            let texture = &self.context.assets.sprites.depo;
+            self.context.geng.draw2d().draw2d(
+                framebuffer,
+                &model.camera,
+                &draw2d::TexturedQuad::unit(&***texture)
+                    .scale(size.as_f32() / 2.0)
+                    .rotate(depo.rotation.map(R32::as_f32))
+                    .translate(depo.position.as_f32()),
+            );
+        }
 
         // Rails
         for (&pos, rail) in query!(model.grid_items, (&position, &rail.Get.Some)) {
@@ -107,6 +104,7 @@ impl GameRender {
             let position = model.grid.grid_to_world(pos);
             let texture = match resource {
                 Resource::Coal => &self.context.assets.sprites.coal,
+                Resource::Diamond => &self.context.assets.sprites.diamond,
                 Resource::PlusCent => &self.context.assets.sprites.plus_cent,
             };
             self.context.geng.draw2d().draw2d(

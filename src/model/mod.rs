@@ -25,6 +25,7 @@ impl Default for PlayerInput {
 
 #[derive(Debug, Clone)]
 pub struct Train {
+    pub in_depo: bool,
     pub target_speed: Coord,
     pub train_speed: Coord,
     pub blocks: VecDeque<TrainBlock>,
@@ -70,6 +71,7 @@ pub enum TrainBlockKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Resource {
     Coal,
+    Diamond,
     PlusCent,
 }
 
@@ -77,6 +79,7 @@ pub enum Resource {
 #[load(serde = "toml")]
 pub struct Config {
     pub map_size: vec2<ICoord>,
+    pub depo_size: vec2<Coord>,
     pub deck: Deck,
     pub train: TrainConfig,
     pub resources: HashMap<Resource, ResourceConfig>,
@@ -195,15 +198,17 @@ pub struct Model {
     pub camera: Camera2d,
     pub grid: Grid,
 
-    pub round: usize,
+    pub quotas_completed: usize,
     pub total_score: Score,
     pub current_quota: Score,
     pub quota_score: Score,
+    pub quota_day: usize,
     pub round_score: Score,
 
     pub phase: Phase,
     pub deck: Deck,
     pub train: Train,
+    pub depo: Collider,
     pub grid_items: StructOf<Arena<GridItem>>,
 }
 
@@ -220,19 +225,22 @@ impl Model {
                 origin: vec2::ZERO,
             },
 
-            round: 0,
+            quotas_completed: 0,
             total_score: 0,
             current_quota: 0,
             quota_score: 0,
+            quota_day: 0,
             round_score: 0,
 
             phase: Phase::Setup,
             deck: config.deck.clone(),
             train: Train {
+                in_depo: false,
                 target_speed: r32(0.0),
                 train_speed: r32(0.0),
                 blocks: vec![].into(),
             },
+            depo: Collider::aabb(Aabb2::ZERO),
             grid_items: default(),
 
             context,

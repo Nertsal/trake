@@ -54,6 +54,15 @@ impl Model {
             return;
         };
 
+        if head.collider.check(&self.depo) {
+            // Ignore wall collisions, go to depo
+            if !self.train.in_depo {
+                self.next_round();
+            }
+            return;
+        }
+        self.train.in_depo = false;
+
         let mut collision = false;
         for wall in query!(self.grid_items, (&wall.Get.Some)) {
             if head.collider.check(&wall.collider) {

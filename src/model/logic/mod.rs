@@ -64,6 +64,16 @@ impl Model {
             if let Some(item) = self.grid_items.remove(id) {
                 if let Some(res) = item.resource {
                     log::debug!("Collected: {:?}", res);
+                    self.particles_queue.push(SpawnParticles {
+                        kind: ParticleKind::Collect(res),
+                        density: r32(10.0),
+                        distribution: ParticleDistribution::Circle {
+                            center: self.grid.grid_to_world(item.position),
+                            radius: r32(0.5),
+                        },
+                        velocity: vec2(0.0, 1.0).as_r32(),
+                        ..default()
+                    });
 
                     match res {
                         Resource::PlusCent => {

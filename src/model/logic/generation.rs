@@ -57,7 +57,7 @@ impl Model {
                     (20.0 * (self.quotas_completed.sqr() as f32 / 5.0) * noise) as Score;
                 self.quota_score = 0;
                 self.quota_day = 1;
-            } else if self.quota_day >= 3 {
+            } else if self.quota_day > 3 {
                 // Quota failed
                 todo!("you failed");
             }

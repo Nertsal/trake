@@ -119,9 +119,17 @@ impl GameUi {
                     Upgrade::Feather => atlas.feather(),
                     Upgrade::Turning => atlas.spiral(),
                 };
+                let hovered = button.state.hovered;
                 button.update(pos, context);
                 if button.state.clicked {
                     actions.push(GameAction::BuyShop(i));
+                    context
+                        .context
+                        .play_sfx(&context.context.assets.sounds.click);
+                } else if !hovered && button.state.hovered {
+                    context
+                        .context
+                        .play_sfx(&context.context.assets.sounds.clop);
                 }
             }
         }

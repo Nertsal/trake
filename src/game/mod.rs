@@ -49,6 +49,7 @@ pub struct GameState {
 
 impl GameState {
     pub fn new(context: Context) -> Self {
+        context.music.play(&context.assets.sounds.tootuh);
         Self {
             render: GameRender::new(context.clone()),
             model: Model::new(context.clone(), context.assets.config.clone()),

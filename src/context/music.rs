@@ -7,6 +7,7 @@ pub struct MusicManager {
 }
 
 struct MusicManagerImpl {
+    master_volume: f32,
     volume: f32,
     playing: Option<Music>,
 }
@@ -15,7 +16,8 @@ impl MusicManager {
     pub fn new() -> Self {
         Self {
             inner: RefCell::new(MusicManagerImpl {
-                volume: 0.5,
+                master_volume: 0.5,
+                volume: 1.0,
                 playing: None,
             }),
         }
@@ -29,9 +31,19 @@ impl MusicManager {
             .map(|music| music.local.clone())
     }
 
-    pub(super) fn set_volume(&self, volume: f32) {
+    pub(super) fn set_master_volume(&self, volume: f32) {
+        let mut inner = self.inner.borrow_mut();
+        inner.master_volume = volume;
+        let volume = inner.volume * inner.master_volume;
+        if let Some(music) = &mut inner.playing {
+            music.set_volume(volume);
+        }
+    }
+
+    pub fn set_volume(&self, volume: f32) {
         let mut inner = self.inner.borrow_mut();
         inner.volume = volume;
+        let volume = inner.volume * inner.master_volume;
         if let Some(music) = &mut inner.playing {
             music.set_volume(volume);
         }

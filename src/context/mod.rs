@@ -92,7 +92,7 @@ impl Context {
         let mut old = self.options.borrow_mut();
 
         self.music
-            .set_volume(options.master_volume * options.music_volume);
+            .set_master_volume(options.master_volume * options.music_volume);
 
         preferences::save(crate::OPTIONS_STORAGE, &options);
         *old = options;

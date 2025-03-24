@@ -108,6 +108,12 @@ pub struct FontAssets {
 #[derive(geng::asset::Load)]
 pub struct SoundAssets {
     pub choochoo: Rc<geng::Sound>,
+    pub click: Rc<geng::Sound>,
+    pub clop: Rc<geng::Sound>,
+    pub clop2: Rc<geng::Sound>,
+    pub puff: Rc<geng::Sound>,
+    #[load(options(looped =  "true"))]
+    pub tootuh: Rc<geng::Sound>,
 }
 
 impl Assets {

@@ -7,6 +7,10 @@ impl Model {
     pub fn update(&mut self, delta_time: FloatTime, player_input: PlayerInput) {
         self.real_time += delta_time;
 
+        self.context
+            .music
+            .set_volume(self.train.train_speed.as_f32().clamp(0.0, 1.0));
+
         match self.phase {
             Phase::Setup => {}
             Phase::Resolution => {
@@ -91,7 +95,7 @@ impl Model {
 
         if !collected.is_empty() {
             self.add_wagon(TrainBlockKind::Wagon);
-            self.context.play_sfx(&self.context.assets.sounds.choochoo);
+            self.context.play_sfx(&self.context.assets.sounds.clop2);
         }
         for id in collected {
             if let Some(item) = self.grid_items.remove(id) {
@@ -189,6 +193,8 @@ impl Model {
                     * (self.train.train_speed * r32(0.5)).clamp(r32(0.5), r32(1.0)),
                 ..default()
             });
+
+            self.context.play_sfx(&self.context.assets.sounds.puff);
         }
     }
 

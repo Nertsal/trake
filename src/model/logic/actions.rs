@@ -34,6 +34,7 @@ impl Model {
         self.train.train_speed = speed;
 
         self.phase = Phase::Resolution;
+        self.context.play_sfx(&self.context.assets.sounds.choochoo);
     }
 
     pub fn place_rail(&mut self, position: vec2<ICoord>, orientation: RailOrientation) {

@@ -34,6 +34,7 @@ pub struct Train {
 pub struct TrainBlock {
     pub kind: TrainBlockKind,
     pub collider: Collider,
+    pub snapped_to_rail: bool,
     pub entering_rail: bool,
     pub path: VecDeque<vec2<Coord>>,
 }
@@ -53,6 +54,7 @@ impl TrainBlock {
                 Aabb2::point(position).extend_symmetric(config.wagon_size / r32(2.0)),
             ),
             kind,
+            snapped_to_rail: false,
             entering_rail: false,
             path: VecDeque::new(),
         }

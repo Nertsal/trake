@@ -98,6 +98,7 @@ impl Model {
                 position,
                 rotation,
             },
+            snapped_to_rail: false,
             entering_rail: false,
             path: VecDeque::new(),
         });
@@ -122,45 +123,77 @@ impl Model {
 
                 let rail_pos = self.grid.grid_to_world(pos);
                 let offset = wagon.collider.position - rail_pos;
-                let current_side = (offset.arg().normalized_2pi().as_degrees().as_f32() / 90.0)
+
+                let face_side = (wagon
+                    .collider
+                    .rotation
+                    .normalized_2pi()
+                    .as_degrees()
+                    .as_f32()
+                    / 90.0)
                     .round() as usize
                     % 4;
+                let back_side = (face_side + 2) % 4;
 
                 let ninety = Angle::from_degrees(r32(90.0));
-                if cons[current_side] && vec2::dot(offset, move_dir) < Coord::ZERO {
+                if cons[back_side] && vec2::dot(offset, move_dir) < Coord::ZERO {
                     // Entering the rail
+                    // Align train with the rail
+                    wagon.collider.rotation = ninety * r32(face_side as f32);
+                    let rail_dir = wagon.collider.rotation.unit_vec();
+                    wagon.collider.position = rail_pos
+                        + rail_dir * vec2::dot(wagon.collider.position - rail_pos, rail_dir);
+
                     if !wagon.entering_rail {
                         // Just entered
-                        // TODO: project position onto rail_dir
                         wagon.path.push_front(wagon.collider.position);
                     }
+
+                    wagon.snapped_to_rail = true;
                     wagon.entering_rail = true;
-                    // Align train with the rail
-                    let opp_side = (current_side + 2) % 4;
-                    wagon.collider.rotation = ninety * r32(opp_side as f32)
+                    true
                 } else {
                     // Leaving the rail
-                    let rail_dir = ninety * r32(current_side as f32);
+                    let rail_dir = ninety * r32(face_side as f32);
 
                     // Crossed the center of the rail - turn
-                    if wagon.entering_rail && !cons[current_side] {
-                        // Find the turn
-                        if cons[(current_side + 1) % 4] {
-                            // Turn left
-                            wagon.collider.rotation = rail_dir + ninety;
-                            wagon.collider.position = rail_pos;
-                            wagon.path.push_front(rail_pos);
-                        } else if cons[(current_side + 3) % 4] {
-                            // Turn right
-                            wagon.collider.rotation = rail_dir - ninety;
-                            wagon.collider.position = rail_pos;
-                            wagon.path.push_front(rail_pos);
-                        }
-                    }
-                    wagon.entering_rail = false;
-                }
+                    let on_rail =
+                        if wagon.snapped_to_rail && wagon.entering_rail && !cons[face_side] {
+                            // Find the turn
+                            if cons[(face_side + 1) % 4] {
+                                // Turn left
+                                wagon.collider.rotation = rail_dir + ninety;
+                                wagon.collider.position = rail_pos;
+                                wagon.path.push_front(rail_pos);
+                                true
+                            } else if cons[(face_side + 3) % 4] {
+                                // Turn right
+                                wagon.collider.rotation = rail_dir - ninety;
+                                wagon.collider.position = rail_pos;
+                                wagon.path.push_front(rail_pos);
+                                true
+                            } else {
+                                false
+                            }
+                        } else if cons[face_side] {
+                            // Align train with the rail
+                            wagon.collider.rotation = ninety * r32(face_side as f32);
+                            let rail_dir = wagon.collider.rotation.unit_vec();
+                            wagon.collider.position = rail_pos
+                                + rail_dir
+                                    * vec2::dot(wagon.collider.position - rail_pos, rail_dir);
+                            if wagon.entering_rail {
+                                wagon.path.push_front(wagon.collider.position);
+                            }
+                            true
+                        } else {
+                            false
+                        };
 
-                cons[current_side]
+                    wagon.snapped_to_rail = on_rail;
+                    wagon.entering_rail = false;
+                    on_rail
+                }
             } else {
                 // Turn by player input
                 wagon.collider.rotation +=
@@ -227,8 +260,8 @@ impl Model {
                     }
                 })
             {
-                if head.path.len() > i + 1 {
-                    head.path.drain(i + 1..);
+                if head.path.len() > i {
+                    head.path.drain(i..);
                 }
                 move_on(from, to, space_left, wagon)
             } else {

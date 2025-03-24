@@ -1,6 +1,16 @@
 use super::*;
 
 #[derive(SplitFields, Debug, Clone)]
+pub struct FloatingText {
+    pub text: Name,
+    pub position: vec2<Coord>,
+    pub velocity: vec2<Coord>,
+    pub size: Coord,
+    pub color: Color,
+    pub lifetime: Bounded<FloatTime>,
+}
+
+#[derive(SplitFields, Debug, Clone)]
 pub struct Particle {
     pub kind: ParticleKind,
     pub position: vec2<Coord>,

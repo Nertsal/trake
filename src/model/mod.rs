@@ -237,6 +237,7 @@ pub struct Model {
     pub grid_items: StructOf<Arena<GridItem>>,
     pub particles_queue: Vec<SpawnParticles>,
     pub particles: StructOf<Arena<Particle>>,
+    pub floating_texts: StructOf<Arena<FloatingText>>,
 }
 
 impl Model {
@@ -277,6 +278,7 @@ impl Model {
             grid_items: default(),
             particles_queue: Vec::new(),
             particles: default(),
+            floating_texts: default(),
 
             context,
             config,

@@ -203,5 +203,20 @@ impl GameRender {
             ),
             ugli::DrawParameters { ..default() },
         );
+
+        // Text
+        for (text, position, size, color, lifetime) in query!(
+            model.floating_texts,
+            (&text, &position, &size, &color, &lifetime)
+        ) {
+            let t = lifetime.get_ratio().as_f32().sqrt();
+            self.util.draw_text(
+                text,
+                position.as_f32(),
+                TextRenderOptions::new(size.as_f32() * t).color(*color),
+                &model.camera,
+                framebuffer,
+            );
+        }
     }
 }

@@ -37,6 +37,23 @@ impl Model {
     }
 
     fn process_particles(&mut self, delta_time: FloatTime) {
+        // Floating texts
+        let mut dead_ids = Vec::new();
+        for (id, position, velocity, lifetime) in query!(
+            self.floating_texts,
+            (id, &mut position, &velocity, &mut lifetime)
+        ) {
+            *position += *velocity * delta_time;
+            lifetime.change(-delta_time);
+            if lifetime.is_min() {
+                dead_ids.push(id);
+            }
+        }
+        for id in dead_ids {
+            self.floating_texts.remove(id);
+        }
+
+        // Particles
         let mut dead_ids = Vec::new();
         for (id, position, velocity, lifetime) in query!(
             self.particles,
@@ -80,24 +97,18 @@ impl Model {
             if let Some(item) = self.grid_items.remove(id) {
                 if let Some(res) = item.resource {
                     log::debug!("Collected: {:?}", res);
-                    self.particles_queue.push(SpawnParticles {
-                        kind: ParticleKind::Collect(res),
-                        density: r32(10.0),
-                        distribution: ParticleDistribution::Circle {
-                            center: self.grid.grid_to_world(item.position),
-                            radius: r32(0.5),
-                        },
-                        velocity: vec2(0.0, 1.0).as_r32(),
-                        ..default()
-                    });
+                    let position = self.grid.grid_to_world(item.position);
+
+                    let mut plus_score = 0;
+                    let mut plus_money = 0;
 
                     match res {
                         Resource::PlusCent => {
-                            self.round_score += self.round_score / 5;
-                            self.money += self.money / 10;
+                            plus_score += self.round_score / 5;
+                            plus_money += self.money / 10;
                         }
                         Resource::Coin => {
-                            self.money += rng.gen_range(8..=13);
+                            plus_money += rng.gen_range(8..=13);
                         }
                         Resource::GhostFuel => {
                             // TODO
@@ -106,7 +117,26 @@ impl Model {
                     }
 
                     if let Some(config) = self.config.resources.get(&res) {
-                        self.round_score += config.value;
+                        plus_score += config.value;
+                    }
+
+                    self.round_score += plus_score;
+                    self.money += plus_money;
+
+                    self.particles_queue.push(SpawnParticles {
+                        kind: ParticleKind::Collect(res),
+                        density: r32(10.0),
+                        distribution: ParticleDistribution::Circle {
+                            center: position,
+                            radius: r32(0.5),
+                        },
+                        velocity: vec2(0.0, 1.0).as_r32(),
+                        ..default()
+                    });
+
+                    if plus_score != 0 {
+                        self.floating_texts
+                            .insert(spawn_text(format!("{:+}", plus_score), position));
                     }
                 }
             }
@@ -137,8 +167,15 @@ impl Model {
 
         if collision {
             let block = self.train.blocks.pop_front().unwrap();
-            self.round_score -=
-                (self.round_score as f32 * thread_rng().gen_range(0.15..=0.25)).ceil() as Score;
+            let plus_score =
+                -(self.round_score as f32 * thread_rng().gen_range(0.15..=0.25)).ceil() as Score;
+            self.round_score += plus_score;
+            if plus_score != 0 {
+                self.floating_texts.insert(spawn_text(
+                    format!("{:+}", plus_score),
+                    block.collider.position,
+                ));
+            }
 
             self.particles_queue.push(SpawnParticles {
                 kind: ParticleKind::WagonDestroyed,
@@ -413,5 +450,27 @@ impl Model {
         if self.train.train_speed == Coord::ZERO {
             self.next_round();
         }
+    }
+}
+
+fn spawn_text(text: impl Into<Name>, position: vec2<Coord>) -> FloatingText {
+    let mut rng = thread_rng();
+    let text = text.into();
+
+    let angle = Angle::from_radians(r32(rng.gen_range(1.0..=2.0)));
+    let speed = r32(rng.gen_range(0.5..=1.0));
+    let velocity = angle.unit_vec() * speed;
+
+    FloatingText {
+        position,
+        velocity,
+        size: r32(0.75),
+        color: if text.starts_with('-') {
+            Color::try_from("#ff4f69").unwrap()
+        } else {
+            Color::try_from("#fff7f8").unwrap()
+        },
+        lifetime: Bounded::new_max(r32(1.5)),
+        text,
     }
 }

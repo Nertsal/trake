@@ -67,18 +67,14 @@ impl GameRender {
         // Depo
         {
             let depo = &model.depo;
-            let size = match depo.shape {
-                Shape::Circle { .. } => todo!(),
-                Shape::Rectangle { width, height } => vec2(width, height),
-            };
             let texture = &self.context.assets.sprites.depo;
-            self.context.geng.draw2d().draw2d(
-                framebuffer,
+            self.util.draw_texture_pp(
+                texture,
+                depo.position.as_f32(),
+                vec2(0.5, 0.5),
+                depo.rotation.map(R32::as_f32),
                 &model.camera,
-                &draw2d::TexturedQuad::unit(&***texture)
-                    .scale(size.as_f32() / 2.0)
-                    .rotate(depo.rotation.map(R32::as_f32))
-                    .translate(depo.position.as_f32()),
+                framebuffer,
             );
         }
 
@@ -89,13 +85,13 @@ impl GameRender {
                 RailKind::Straight => &self.context.assets.sprites.rail_straight,
                 RailKind::Left => &self.context.assets.sprites.rail_left,
             };
-            self.context.geng.draw2d().draw2d(
-                framebuffer,
+            self.util.draw_texture_pp(
+                texture,
+                position.as_f32(),
+                vec2(0.5, 0.5),
+                Angle::from_degrees(90.0) * (rail.orientation.rotation as f32 - 1.0),
                 &model.camera,
-                &draw2d::TexturedQuad::unit(&***texture)
-                    .scale(model.grid.cell_size.as_f32() / 2.0)
-                    .rotate(Angle::from_degrees(90.0) * (rail.orientation.rotation as f32 - 1.0))
-                    .translate(position.as_f32()),
+                framebuffer,
             );
         }
 
@@ -107,12 +103,13 @@ impl GameRender {
                 Resource::Diamond => &self.context.assets.sprites.diamond,
                 Resource::PlusCent => &self.context.assets.sprites.plus_cent,
             };
-            self.context.geng.draw2d().draw2d(
-                framebuffer,
+            self.util.draw_texture_pp(
+                texture,
+                position.as_f32(),
+                vec2(0.5, 0.5),
+                Angle::ZERO,
                 &model.camera,
-                &draw2d::TexturedQuad::unit(&***texture)
-                    .scale(model.grid.cell_size.as_f32() / 2.0)
-                    .translate(position.as_f32()),
+                framebuffer,
             );
         }
 

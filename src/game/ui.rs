@@ -29,9 +29,14 @@ impl GameUi {
         context.layout_size = layout_size;
         context.screen = screen;
 
-        let mut left_bar = screen.cut_left(screen.width() / 2.5);
+        let game_size = crate::GAME_RESOLUTION * 3;
+        let mut game = screen.cut_right(game_size.x as f32);
+        let excess = game.height() - game_size.y as f32;
+        game.cut_top(excess / 2.0);
+        game.cut_bottom(excess / 2.0);
+        let mut left_bar = screen;
 
-        self.game.update(screen, context);
+        self.game.update(game, context);
 
         // Left bar
         {
@@ -55,6 +60,11 @@ impl GameUi {
             if launch.text.state.clicked {
                 actions.push(GameAction::LaunchTrain);
             }
+        }
+
+        // Shop
+        {
+            let mut shop = left_bar.cut_bottom(font_size * 4.0);
         }
 
         actions

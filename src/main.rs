@@ -17,7 +17,7 @@ use geng::prelude::*;
 const OPTIONS_STORAGE: &str = "options";
 
 const FIXED_FPS: f64 = 60.0;
-const GAME_RESOLUTION: vec2<usize> = vec2(600, 450);
+const GAME_RESOLUTION: vec2<usize> = vec2(4 * 90, 3 * 90);
 
 #[derive(clap::Parser)]
 struct Opts {

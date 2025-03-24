@@ -191,9 +191,22 @@ impl geng::State for GameState {
         );
         self.render
             .draw_game(&self.model, &self.render_options, &mut game_buffer);
-        geng_utils::texture::DrawTexture::new(&self.game_texture)
-            .fit(self.ui.game.position, vec2(0.5, 0.5))
-            .draw(&geng::PixelPerfectCamera, &self.context.geng, framebuffer);
+        {
+            // Pixel perfect
+            let pos = self.ui.game.position.center();
+            let size = self.game_texture.size() * 3;
+            let align = vec2(0.5, 0.5);
+            let align_size = (size.as_f32() * align).map(f32::fract);
+            let pos = pos.map(f32::floor) + align_size;
+            let screen_aabb = Aabb2::point(pos).extend_symmetric(size.as_f32() / 2.0);
+            self.context.geng.draw2d().textured_quad(
+                framebuffer,
+                &geng::PixelPerfectCamera,
+                screen_aabb,
+                &self.game_texture,
+                Color::WHITE,
+            );
+        }
 
         self.render
             .draw_game_ui(&self.model, &self.ui_context, framebuffer);

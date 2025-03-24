@@ -138,6 +138,32 @@ impl UtilRender {
         );
     }
 
+    pub fn draw_texture_pp(
+        &self,
+        texture: &ugli::Texture,
+        position: vec2<f32>,
+        align: vec2<f32>,
+        rotation: Angle<f32>,
+        camera: &impl geng::AbstractCamera2d,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        let draw = geng_utils::texture::DrawTexture::new(texture).pixel_perfect(
+            position,
+            align,
+            camera,
+            framebuffer,
+        );
+        self.context.geng.draw2d().draw2d(
+            framebuffer,
+            camera,
+            &draw2d::TexturedQuad::unit(draw.texture).transform(
+                mat3::translate(draw.target.center())
+                    * mat3::rotate(rotation)
+                    * mat3::scale(draw.target.size() / 2.0),
+            ),
+        );
+    }
+
     pub fn draw_nine_slice(
         &self,
         pos: Aabb2<f32>,

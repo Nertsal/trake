@@ -5,9 +5,14 @@ use super::*;
 
 impl Model {
     pub fn update(&mut self, delta_time: FloatTime) {
-        self.move_train(delta_time);
-        self.collect_resources(delta_time);
-        self.collide_train(delta_time);
+        match self.phase {
+            Phase::Setup => {}
+            Phase::Resolution => {
+                self.move_train(delta_time);
+                self.collect_resources(delta_time);
+                self.collide_train(delta_time);
+            }
+        }
     }
 
     fn collect_resources(&mut self, _delta_time: FloatTime) {
@@ -24,41 +29,7 @@ impl Model {
         }
 
         if !collected.is_empty() {
-            if let Some(tail) = self.train.blocks.back() {
-                let mut space_left =
-                    self.config.train.wagon_spacing + self.config.train.wagon_size.x;
-                let (anchor, dir) = if let Some((to, from)) =
-                    std::iter::once(tail.collider.position)
-                        .chain(tail.path.iter().copied())
-                        .tuple_windows()
-                        .find(|(to, from)| {
-                            let dist = (*to - *from).len();
-                            if space_left <= dist {
-                                true
-                            } else {
-                                space_left -= dist;
-                                false
-                            }
-                        }) {
-                    (to, (from - to).normalize_or_zero())
-                } else {
-                    space_left = self.config.train.wagon_spacing + self.config.train.wagon_size.x;
-                    (tail.collider.position, -tail.collider.rotation.unit_vec())
-                };
-                let position = anchor + dir * space_left;
-                let rotation = (-dir).arg();
-                self.train.blocks.push_back(TrainBlock {
-                    kind: TrainBlockKind::Wagon,
-                    collider: Collider {
-                        shape: Shape::rectangle(self.config.train.wagon_size),
-                        position,
-                        rotation,
-                    },
-                    entering_rail: false,
-                    path: VecDeque::new(),
-                });
-            }
-
+            self.add_wagon(TrainBlockKind::Wagon);
             self.context.play_sfx(&self.context.assets.sounds.choochoo);
         }
         for id in collected {
@@ -94,6 +65,42 @@ impl Model {
         if collision {
             self.train.blocks.pop_front();
         }
+    }
+
+    fn add_wagon(&mut self, kind: TrainBlockKind) {
+        let Some(tail) = self.train.blocks.back() else {
+            return;
+        };
+        let mut space_left = self.config.train.wagon_spacing + self.config.train.wagon_size.x;
+        let (anchor, dir) = if let Some((to, from)) = std::iter::once(tail.collider.position)
+            .chain(tail.path.iter().copied())
+            .tuple_windows()
+            .find(|(to, from)| {
+                let dist = (*to - *from).len();
+                if space_left <= dist {
+                    true
+                } else {
+                    space_left -= dist;
+                    false
+                }
+            }) {
+            (to, (from - to).normalize_or_zero())
+        } else {
+            space_left = self.config.train.wagon_spacing + self.config.train.wagon_size.x;
+            (tail.collider.position, -tail.collider.rotation.unit_vec())
+        };
+        let position = anchor + dir * space_left;
+        let rotation = (-dir).arg();
+        self.train.blocks.push_back(TrainBlock {
+            kind,
+            collider: Collider {
+                shape: Shape::rectangle(self.config.train.wagon_size),
+                position,
+                rotation,
+            },
+            entering_rail: false,
+            path: VecDeque::new(),
+        });
     }
 
     fn move_train(&mut self, delta_time: FloatTime) {

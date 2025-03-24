@@ -160,6 +160,12 @@ pub struct GridItem {
     pub wall: Option<Wall>,
 }
 
+#[derive(Debug, Clone)]
+pub enum Phase {
+    Setup,
+    Resolution,
+}
+
 pub struct Model {
     pub context: Context,
     pub config: Config,
@@ -172,6 +178,7 @@ pub struct Model {
     pub quota_score: Score,
     pub round_score: Score,
 
+    pub phase: Phase,
     pub train: Train,
     pub grid_items: StructOf<Arena<GridItem>>,
 }
@@ -182,7 +189,7 @@ impl Model {
             camera: Camera2d {
                 center: vec2::ZERO,
                 rotation: Angle::ZERO,
-                fov: 16.0,
+                fov: 12.0,
             },
             grid: Grid {
                 cell_size: vec2::splat(1.0).as_r32(),
@@ -194,6 +201,7 @@ impl Model {
             quota_score: 0,
             round_score: 0,
 
+            phase: Phase::Setup,
             train: Train {
                 target_speed: r32(0.0),
                 train_speed: r32(0.0),

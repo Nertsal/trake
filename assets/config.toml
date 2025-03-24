@@ -1,0 +1,28 @@
+map_size = [15, 15]
+depo_size = [1.6, 3.2]
+
+[deck]
+resources = ["Coal", "PlusCent", "Diamond"]
+rails = ["Straight", "Straight", "Left"]
+
+[train]
+turn_speed = 2.0
+overtime_slowdown = 0.3
+rail_speed = 7.0
+offrail_speed = 5.0
+acceleration = 1.0
+deceleration = 2.0
+wagon_size = [0.9, 0.45]
+wagon_spacing = 0.1
+
+[resources.Coal]
+value = 5
+rarity = 1
+
+[resources.Diamond]
+value = 20
+rarity = 5
+
+[resources.PlusCent]
+value = 0
+rarity = 5

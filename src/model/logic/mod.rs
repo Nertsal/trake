@@ -440,7 +440,8 @@ impl Model {
             + (self.config.train.rail_speed - self.config.train.offrail_speed)
                 * r32(on_rail as f32 / self.train.blocks.len() as f32);
         let slowdown_s = self.config.train.offrail_speed;
-        let slowdown_t = slowdown_s / self.config.train.overtime_slowdown;
+        let slowdown_t = slowdown_s / self.config.train.overtime_slowdown
+            - r32((self.train.blocks.len() as f32 - 1.0) * 2.0);
         let t = self.round_time / slowdown_t;
         let slowdown = t * t * t * slowdown_s;
         let target = (self.train.target_speed - slowdown).max(Coord::ZERO);

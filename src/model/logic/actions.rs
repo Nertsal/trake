@@ -19,7 +19,7 @@ impl Model {
                     Upgrade::Turning => {
                         let limit = Angle::from_radians(r32(4.0));
                         let s = &mut self.config.train.turn_speed;
-                        *s = (limit + *s) / r32(2.0);
+                        *s = limit + (*s - limit) * r32(0.75);
                     }
                 }
             }

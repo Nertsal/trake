@@ -100,8 +100,10 @@ impl GameRender {
             let position = model.grid.grid_to_world(pos);
             let texture = match resource {
                 Resource::Coal => &self.context.assets.sprites.coal,
+                Resource::Coin => &self.context.assets.sprites.coin,
                 Resource::Diamond => &self.context.assets.sprites.diamond,
                 Resource::PlusCent => &self.context.assets.sprites.plus_cent,
+                Resource::GhostFuel => &self.context.assets.sprites.ghost_fuel,
             };
             self.util.draw_texture_pp(
                 texture,

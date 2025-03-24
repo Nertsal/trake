@@ -71,8 +71,10 @@ pub enum TrainBlockKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Resource {
     Coal,
+    Coin,
     Diamond,
     PlusCent,
+    GhostFuel,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
@@ -192,6 +194,20 @@ pub struct Deck {
     pub rails: Vec<RailKind>,
 }
 
+#[derive(Debug, Clone)]
+pub enum Upgrade {
+    Resource(Resource),
+    Speed,
+    Feather,
+}
+
+#[derive(Debug, Clone)]
+pub struct ShopItem {
+    pub upgrade: Upgrade,
+    pub price: Money,
+    pub can_purchase: bool,
+}
+
 pub struct Model {
     pub context: Context,
     pub config: Config,
@@ -208,12 +224,14 @@ pub struct Model {
     pub quota_score: Score,
     pub quota_day: usize,
     pub round_score: Score,
+    pub money: Money,
 
     pub phase: Phase,
     pub deck: Deck,
     pub train: Train,
     pub depo: Collider,
     pub grid_items: StructOf<Arena<GridItem>>,
+    pub shop: Vec<ShopItem>,
 }
 
 impl Model {
@@ -238,6 +256,7 @@ impl Model {
             quota_score: 0,
             quota_day: 0,
             round_score: 0,
+            money: 0,
 
             phase: Phase::Setup,
             deck: config.deck.clone(),
@@ -249,6 +268,7 @@ impl Model {
             },
             depo: Collider::aabb(Aabb2::ZERO),
             grid_items: default(),
+            shop: Vec::new(),
 
             context,
             config,

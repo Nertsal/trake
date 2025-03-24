@@ -21,6 +21,7 @@ impl GameUi {
     ) -> Vec<GameAction> {
         let mut actions = Vec::new();
 
+        let atlas = &context.context.assets.atlas;
         let mut screen = screen.fit_aabb(vec2(16.0, 9.0), vec2(0.5, 0.5));
         let font_size = screen.height() * 0.04;
         let layout_size = screen.height() * 0.03;
@@ -64,7 +65,50 @@ impl GameUi {
 
         // Shop
         {
-            let mut shop = left_bar.cut_bottom(font_size * 4.0);
+            let mut shop = left_bar.cut_bottom(font_size * 6.0);
+
+            shop.cut_left(font_size * 4.0);
+            shop.cut_bottom(font_size * 2.0);
+
+            let title = shop.cut_top(font_size * 1.2);
+            let text = context
+                .state
+                .get_root_or(|| TextWidget::new("Shop").aligned(vec2(0.0, 1.0)));
+            text.update(title, context);
+
+            for (i, item) in model.shop.iter().enumerate() {
+                let mut pos = shop.cut_left(font_size * 3.0);
+
+                let mut price = pos.cut_bottom(font_size);
+                let icon = price.split_left(0.5);
+                context
+                    .state
+                    .get_root_or(|| IconWidget::new(atlas.coin()))
+                    .update(icon, context);
+                let text = context
+                    .state
+                    .get_root_or(|| TextWidget::new("").aligned(vec2(0.0, 0.5)));
+                text.update(price, context);
+                text.text = format!("{}", item.price).into();
+
+                let pos = pos.extend_uniform(-font_size * 0.1);
+                let button = context
+                    .state
+                    .get_root_or(|| IconButtonWidget::new_normal(atlas.circle()));
+                button.icon.texture = match item.upgrade {
+                    Upgrade::Resource(resource) => match resource {
+                        Resource::PlusCent => atlas.plus_cent(),
+                        Resource::GhostFuel => atlas.ghost_fuel(),
+                        _ => unimplemented!(),
+                    },
+                    Upgrade::Speed => atlas.speed(),
+                    Upgrade::Feather => atlas.feather(),
+                };
+                button.update(pos, context);
+                if button.state.clicked {
+                    actions.push(GameAction::BuyShop(i));
+                }
+            }
         }
 
         actions

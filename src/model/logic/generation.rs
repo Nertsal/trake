@@ -128,6 +128,32 @@ impl Model {
             }
         }
 
+        // Shop
+        let upgrades = 2;
+        let options = [
+            (Upgrade::Speed, 15),
+            (Upgrade::Feather, 10),
+            (Upgrade::Resource(Resource::GhostFuel), 20),
+            (Upgrade::Resource(Resource::PlusCent), 20),
+        ];
+        let discounts = [(0.0, 4.0), (0.1, 3.0), (0.25, 2.0), (0.50, 1.0)];
+        let &(discount, _) = discounts.choose_weighted(&mut rng, |(_, w)| *w).unwrap();
+        let discount_i = rng.gen_range(0..upgrades);
+        let upgrades = options.choose_multiple(&mut rng, upgrades);
+        self.shop = upgrades
+            .enumerate()
+            .map(|(i, (upgrade, mut price))| {
+                if i == discount_i {
+                    price -= (price as f32 * discount).ceil() as Money;
+                }
+                ShopItem {
+                    upgrade: upgrade.clone(),
+                    price,
+                    can_purchase: true,
+                }
+            })
+            .collect();
+
         self.phase = Phase::Setup;
     }
 }

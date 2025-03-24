@@ -1,7 +1,8 @@
 mod button;
+mod icon;
 mod text;
 
-pub use self::{button::*, text::*};
+pub use self::{button::*, icon::*, text::*};
 
 use super::{context::*, geometry::Geometry, WidgetId};
 

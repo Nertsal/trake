@@ -118,6 +118,7 @@ impl Model {
 
     fn move_train(&mut self, delta_time: FloatTime, player_input: &PlayerInput) {
         if self.train.blocks.is_empty() {
+            self.next_round();
             return;
         }
 
@@ -318,5 +319,9 @@ impl Model {
         };
         self.train.train_speed =
             current_speed + (acceleration * delta_time).clamp_abs((target - current_speed).abs());
+
+        if self.train.train_speed == Coord::ZERO {
+            self.next_round();
+        }
     }
 }

@@ -51,7 +51,15 @@ pub struct Assets {
 }
 
 trake_derive::texture_atlas!(pub SpritesAtlas {
+    coin,
+    ghost_fuel,
+    plus_cent,
+    speed,
+    feather,
+
     white,
+    circle,
+
     fill,
     fill_thin,
     fill_thinner,
@@ -65,11 +73,17 @@ pub struct SpriteAssets {
     pub locomotive: Rc<PixelTexture>,
     pub rail_straight: Rc<PixelTexture>,
     pub rail_left: Rc<PixelTexture>,
-    pub coal: Rc<PixelTexture>,
-    pub diamond: Rc<PixelTexture>,
-    pub plus_cent: Rc<PixelTexture>,
     pub wall: Rc<PixelTexture>,
     pub depo: Rc<PixelTexture>,
+
+    pub coal: Rc<PixelTexture>,
+    pub coin: Rc<PixelTexture>,
+    pub diamond: Rc<PixelTexture>,
+    pub plus_cent: Rc<PixelTexture>,
+
+    pub ghost_fuel: Rc<PixelTexture>,
+    pub speed: Rc<PixelTexture>,
+    pub feather_hat: Rc<PixelTexture>,
 }
 
 #[derive(geng::asset::Load)]

@@ -185,7 +185,7 @@ impl TextEdit {
             .borrow()
             .geng
             .as_ref()
-            .map_or(false, |geng| geng.window().is_editing_text())
+            .is_some_and(|geng| geng.window().is_editing_text())
     }
 }
 
@@ -265,7 +265,6 @@ impl UiContext {
 
     /// Should be called before layout.
     /// Updates input values.
-    // TODO: use window from context
     pub fn update(&mut self, delta_time: f32) {
         self.reset_focus();
 

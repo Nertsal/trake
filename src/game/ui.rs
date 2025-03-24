@@ -42,6 +42,13 @@ impl GameUi {
             let score = context.state.get_root_or(|| TextWidget::new("Score"));
             score.update(pos, context);
             score.text = format!("Score: {}", model.round_score).into();
+
+            let pos = left_bar.cut_top(font_size * 1.2);
+            let launch = context.state.get_root_or(|| ButtonWidget::new("Launch"));
+            launch.update(pos, context);
+            if launch.text.state.clicked {
+                actions.push(GameAction::LaunchTrain);
+            }
         }
 
         actions

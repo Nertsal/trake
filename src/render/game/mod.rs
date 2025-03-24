@@ -1,9 +1,6 @@
 mod ui;
 
-use super::{
-    mask::{MaskedRender, MaskedStack},
-    util::*,
-};
+use super::{mask::MaskedStack, util::*};
 
 use crate::{model::*, prelude::*};
 

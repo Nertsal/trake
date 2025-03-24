@@ -115,6 +115,7 @@ impl geng::State for GameState {
             geng::Event::KeyPress { key } => self.handle_key(key),
             geng::Event::MousePress { button } => self.handle_mouse(button),
             geng::Event::CursorMove { position } => {
+                self.ui_context.cursor.cursor_move(position.as_f32());
                 self.cursor_pos = position;
 
                 let game = self.ui.game.position;
@@ -125,6 +126,9 @@ impl geng::State for GameState {
                     .screen_to_world(game.size().as_f32(), position)
                     .as_r32();
                 self.cursor_grid_pos = self.model.grid.world_to_grid(self.cursor_world_pos);
+            }
+            geng::Event::Wheel { delta } => {
+                self.ui_context.cursor.scroll += delta as f32;
             }
             _ => {}
         }

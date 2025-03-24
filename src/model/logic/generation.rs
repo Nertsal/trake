@@ -10,8 +10,8 @@ impl Model {
 
         // Train
         self.train = Train {
-            target_speed: r32(1.0),
-            train_speed: r32(1.0),
+            target_speed: r32(0.0),
+            train_speed: r32(0.0),
             blocks: vec![
                 TrainBlock::new_locomotive(&self.config.train, vec2(2.0, 3.0).as_r32()),
                 TrainBlock::new_wagon(&self.config.train, vec2(-1.2, 0.0).as_r32()),

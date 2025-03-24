@@ -68,9 +68,7 @@ impl MusicManager {
             .borrow()
             .playing
             .as_ref()
-            .map_or(true, |playing| {
-                playing.effect.is_none() || Rc::ptr_eq(&playing.local, &music)
-            })
+            .is_none_or(|playing| playing.effect.is_none() || Rc::ptr_eq(&playing.local, music))
         {
             self.play(music);
         }

@@ -42,7 +42,7 @@ jobs:
 
   deploy-itch:
     name: Deploy Itch
-    if: github.ref == 'refs/heads/release/itch' && github.repository_owner == 'nertsal'
+    if: github.ref == 'refs/heads/release/main' && github.repository_owner == 'nertsal'
     runs-on: ubuntu-latest
     needs:
       - build-web

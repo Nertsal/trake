@@ -39,11 +39,18 @@ impl GameUi {
             let title = left_bar.cut_top(font_size * 2.0);
 
             let pos = left_bar.cut_top(font_size * 1.0);
+            let score = context.state.get_root_or(|| TextWidget::new("Quota"));
+            score.update(pos, context);
+            score.text = format!("Quota: {}/{}", model.quota_score, model.current_quota).into();
+
+            let pos = left_bar.cut_top(font_size * 1.0);
             let score = context.state.get_root_or(|| TextWidget::new("Score"));
             score.update(pos, context);
             score.text = format!("Score: {}", model.round_score).into();
 
-            let pos = left_bar.cut_top(font_size * 1.2);
+            let pos = left_bar
+                .cut_top(font_size * 1.2)
+                .with_width(font_size * 4.0, 0.5);
             let launch = context.state.get_root_or(|| ButtonWidget::new("Launch"));
             launch.update(pos, context);
             if launch.text.state.clicked {

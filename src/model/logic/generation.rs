@@ -40,22 +40,27 @@ impl Model {
         let mut rng = thread_rng();
 
         // Score
-        self.total_score += self.round_score;
-        self.quota_score += self.round_score;
-        self.round_score = 0;
-        if self.quota_score >= self.current_quota {
-            // Next quota
-            self.quotas_completed += 1;
-            let noise = rng.gen_range(0.9..=1.1);
-            self.current_quota +=
-                (100.0 * (self.quotas_completed.sqr() as f32 / 16.0) * noise) as Score;
-        } else if self.quota_day >= 2 {
-            // Quota failed
-            todo!("you failed");
+        self.quota_day += 1;
+        if self.quota_day == 1 && self.quotas_completed == 0 {
+            // First quota
+            self.current_quota = 15;
         } else {
-            // Next day
-            self.quota_day += 1;
+            self.total_score += self.round_score;
+            self.quota_score += self.round_score;
+            if self.quota_score >= self.current_quota {
+                // Next quota
+                self.quotas_completed += 1;
+                let noise = rng.gen_range(0.9..=1.1);
+                self.current_quota +=
+                    (20.0 * (self.quotas_completed.sqr() as f32 / 5.0) * noise) as Score;
+                self.quota_score = 0;
+                self.quota_day = 1;
+            } else if self.quota_day >= 3 {
+                // Quota failed
+                todo!("you failed");
+            }
         }
+        self.round_score = 0;
 
         // Depo
         let size = self.config.depo_size;

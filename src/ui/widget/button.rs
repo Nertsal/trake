@@ -62,6 +62,7 @@ pub struct IconButtonWidget {
     pub icon: IconWidget,
     pub light_color: Color,
     pub dark_color: Color,
+    pub can_click: bool,
 }
 
 impl IconButtonWidget {
@@ -81,6 +82,7 @@ impl IconButtonWidget {
             icon,
             light_color,
             dark_color,
+            can_click: true,
         }
     }
 
@@ -101,6 +103,9 @@ impl IconButtonWidget {
         let mut dark = self.dark_color;
         if self.state.hovered {
             std::mem::swap(&mut dark, &mut light);
+        }
+        if !self.can_click {
+            dark = crate::util::with_alpha(dark, 0.5);
         }
 
         if let Some(bg) = &mut self.icon.background {

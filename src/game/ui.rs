@@ -49,6 +49,11 @@ impl GameUi {
             score.text = format!("Quota: {}/{}", model.quota_score, model.current_quota).into();
 
             let pos = left_bar.cut_top(font_size * 1.0);
+            let score = context.state.get_root_or(|| TextWidget::new("Day"));
+            score.update(pos, context);
+            score.text = format!("Day: {}/3", model.quota_day).into();
+
+            let pos = left_bar.cut_top(font_size * 1.0);
             let score = context.state.get_root_or(|| TextWidget::new("Score"));
             score.update(pos, context);
             score.text = format!("Score: {}", model.round_score).into();
@@ -109,6 +114,7 @@ impl GameUi {
                 let button = context
                     .state
                     .get_root_or(|| IconButtonWidget::new_normal(atlas.circle()));
+                button.can_click = item.can_purchase;
                 button.icon.texture = match item.upgrade {
                     Upgrade::Resource(resource) => match resource {
                         Resource::PlusCent => atlas.plus_cent(),

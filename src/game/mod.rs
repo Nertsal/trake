@@ -118,5 +118,6 @@ impl geng::State for GameState {
 
         self.render
             .draw_game(&self.model, &self.render_options, framebuffer);
+        self.render.draw_game_ui(&self.model, framebuffer);
     }
 }

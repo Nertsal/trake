@@ -9,5 +9,9 @@ wagon_size = [0.9, 0.45]
 wagon_spacing = 0.1
 
 [resources.Coal]
-value = 1
+value = 5
 rarity = 1
+
+[resources.PlusCent]
+value = 0
+rarity = 5

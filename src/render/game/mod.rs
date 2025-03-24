@@ -1,3 +1,5 @@
+mod ui;
+
 use super::util::*;
 
 use crate::{model::*, prelude::*};
@@ -96,6 +98,7 @@ impl GameRender {
             let position = model.grid.grid_to_world(pos);
             let texture = match resource {
                 Resource::Coal => &self.context.assets.sprites.coal,
+                Resource::PlusCent => &self.context.assets.sprites.plus_cent,
             };
             self.context.geng.draw2d().draw2d(
                 framebuffer,

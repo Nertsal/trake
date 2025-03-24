@@ -65,6 +65,14 @@ impl Model {
             if let Some(item) = self.grid_items.remove(id) {
                 if let Some(res) = item.resource {
                     log::debug!("Collected: {:?}", res);
+
+                    if let Resource::PlusCent = res {
+                        self.round_score += self.round_score / 5;
+                    }
+
+                    if let Some(config) = self.config.resources.get(&res) {
+                        self.round_score += config.value;
+                    }
                 }
             }
         }

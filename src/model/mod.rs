@@ -9,6 +9,7 @@ pub type Coord = R32;
 pub type ICoord = i64;
 pub type FloatTime = R32;
 pub type Money = i64;
+pub type Score = i64;
 
 #[derive(Debug, Clone)]
 pub struct Train {
@@ -55,6 +56,7 @@ pub enum TrainBlockKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum Resource {
     Coal,
+    PlusCent,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
@@ -165,6 +167,11 @@ pub struct Model {
     pub camera: Camera2d,
     pub grid: Grid,
 
+    pub total_score: Score,
+    pub current_quota: Score,
+    pub quota_score: Score,
+    pub round_score: Score,
+
     pub train: Train,
     pub grid_items: StructOf<Arena<GridItem>>,
 }
@@ -181,6 +188,11 @@ impl Model {
                 cell_size: vec2::splat(1.0).as_r32(),
                 origin: vec2::ZERO,
             },
+
+            total_score: 0,
+            current_quota: 0,
+            quota_score: 0,
+            round_score: 0,
 
             train: Train {
                 target_speed: r32(0.0),

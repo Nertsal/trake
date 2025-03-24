@@ -59,7 +59,7 @@ impl Model {
                 self.quota_day = 1;
             } else if self.quota_day > 3 {
                 // Quota failed
-                todo!("you failed");
+                todo!("you failed, final score: {}", self.total_score);
             }
         }
         self.money += (self.round_score as f32 / 3.0 * rng.gen_range(0.9..=1.1)

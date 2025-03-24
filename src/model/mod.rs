@@ -1,7 +1,8 @@
 mod collider;
 mod logic;
+mod particles;
 
-pub use self::collider::*;
+pub use self::{collider::*, particles::*};
 
 use crate::prelude::*;
 
@@ -231,8 +232,11 @@ pub struct Model {
     pub deck: Deck,
     pub train: Train,
     pub depo: Collider,
-    pub grid_items: StructOf<Arena<GridItem>>,
     pub shop: Vec<ShopItem>,
+
+    pub grid_items: StructOf<Arena<GridItem>>,
+    pub particles_queue: Vec<SpawnParticles>,
+    pub particles: StructOf<Arena<Particle>>,
 }
 
 impl Model {
@@ -268,8 +272,11 @@ impl Model {
                 blocks: vec![].into(),
             },
             depo: Collider::aabb(Aabb2::ZERO),
-            grid_items: default(),
             shop: Vec::new(),
+
+            grid_items: default(),
+            particles_queue: Vec::new(),
+            particles: default(),
 
             context,
             config,

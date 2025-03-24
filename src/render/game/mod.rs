@@ -160,5 +160,25 @@ impl GameRender {
                 );
             }
         }
+
+        // Particles
+        for (kind, collider, lifetime) in query!(model.particles, (&kind, &collider, &lifetime)) {
+            let color = match kind {
+                ParticleKind::Steam => Color::try_from("#3d3957aa").unwrap(),
+                ParticleKind::Wall => Color::try_from("#ab1f65").unwrap(),
+                ParticleKind::WagonDestroyed => Color::try_from("#ffda45").unwrap(),
+                ParticleKind::Collect(resource) => match resource {
+                    Resource::Coal => Color::try_from("#ff8142").unwrap(),
+                    Resource::Coin => Color::try_from("#ffda45").unwrap(),
+                    Resource::Diamond => Color::try_from("#49e7ec").unwrap(),
+                    Resource::PlusCent => Color::try_from("#ffda45").unwrap(),
+                    Resource::GhostFuel => Color::try_from("#ff8142").unwrap(),
+                },
+            };
+            let alpha = lifetime.get_ratio().as_f32().sqrt();
+            let color = crate::util::with_alpha(color, alpha);
+            self.util
+                .draw_collider(collider, color, &model.camera, framebuffer);
+        }
     }
 }

@@ -16,6 +16,29 @@ impl Model {
                 self.collide_train(delta_time);
             }
         }
+
+        self.process_particles(delta_time);
+    }
+
+    fn process_particles(&mut self, delta_time: FloatTime) {
+        let mut dead_ids = Vec::new();
+        for (id, collider, velocity, lifetime) in query!(
+            self.particles,
+            (id, &mut collider, &velocity, &mut lifetime)
+        ) {
+            collider.position += *velocity * delta_time;
+            lifetime.change(-delta_time);
+            if lifetime.is_min() {
+                dead_ids.push(id);
+            }
+        }
+        for id in dead_ids {
+            self.particles.remove(id);
+        }
+        let spawn = self.particles_queue.drain(..).flat_map(spawn_particles);
+        for particle in spawn {
+            self.particles.insert(particle);
+        }
     }
 
     fn collect_resources(&mut self, _delta_time: FloatTime) {
@@ -304,6 +327,20 @@ impl Model {
         let mut on_rail = 0;
         let mut blocks = self.train.blocks.iter_mut();
         if let Some(mut head) = blocks.next() {
+            self.particles_queue.push(SpawnParticles {
+                kind: ParticleKind::Steam,
+                density: r32(4.0) * self.train.train_speed.clamp(r32(0.5), r32(5.0)),
+                distribution: ParticleDistribution::Circle {
+                    center: head.collider.position
+                        + head.collider.rotation.unit_vec() * self.config.train.wagon_size.x
+                            / r32(2.5),
+                    radius: r32(0.1),
+                },
+                size: r32(0.05)..=r32(0.15),
+                velocity: -head.collider.rotation.unit_vec()
+                    * (self.train.train_speed * r32(0.5)).clamp(r32(0.1), r32(0.5)),
+                ..default()
+            });
             if move_head(head, player_input) {
                 on_rail += 1;
             }

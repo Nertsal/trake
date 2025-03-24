@@ -17,16 +17,32 @@ impl Model {
             }
         }
 
+        self.passive_particles(delta_time);
         self.process_particles(delta_time);
+    }
+
+    fn passive_particles(&mut self, _delta_time: FloatTime) {
+        for wall in query!(self.grid_items, (&wall.Get.Some)) {
+            if wall.collider.check(&self.depo) {
+                continue;
+            }
+            self.particles_queue.push(SpawnParticles {
+                kind: ParticleKind::Wall,
+                density: r32(0.5),
+                distribution: ParticleDistribution::Aabb(wall.collider.compute_aabb()),
+                size: r32(0.05)..=r32(0.1),
+                ..default()
+            });
+        }
     }
 
     fn process_particles(&mut self, delta_time: FloatTime) {
         let mut dead_ids = Vec::new();
-        for (id, collider, velocity, lifetime) in query!(
+        for (id, position, velocity, lifetime) in query!(
             self.particles,
-            (id, &mut collider, &velocity, &mut lifetime)
+            (id, &mut position, &velocity, &mut lifetime)
         ) {
-            collider.position += *velocity * delta_time;
+            *position += *velocity * delta_time;
             lifetime.change(-delta_time);
             if lifetime.is_min() {
                 dead_ids.push(id);
@@ -120,9 +136,22 @@ impl Model {
         }
 
         if collision {
-            self.train.blocks.pop_front();
+            let block = self.train.blocks.pop_front().unwrap();
             self.round_score -=
                 (self.round_score as f32 * thread_rng().gen_range(0.15..=0.25)).ceil() as Score;
+
+            self.particles_queue.push(SpawnParticles {
+                kind: ParticleKind::WagonDestroyed,
+                density: r32(20.0),
+                distribution: ParticleDistribution::Circle {
+                    center: block.collider.position,
+                    radius: r32(0.5),
+                },
+                size: r32(0.1)..=r32(0.15),
+                velocity: -block.collider.rotation.unit_vec()
+                    * (self.train.train_speed * r32(0.5)).clamp(r32(0.5), r32(1.0)),
+                ..default()
+            });
         }
     }
 

@@ -3,7 +3,8 @@ use super::*;
 #[derive(SplitFields, Debug, Clone)]
 pub struct Particle {
     pub kind: ParticleKind,
-    pub collider: Collider,
+    pub position: vec2<Coord>,
+    pub radius: Coord,
     pub velocity: vec2<Coord>,
     pub lifetime: Bounded<FloatTime>,
 }
@@ -94,11 +95,12 @@ pub fn spawn_particles(options: SpawnParticles) -> impl Iterator<Item = Particle
         .into_iter()
         .map(move |position| {
             let velocity = rng.gen_circle(options.velocity, r32(0.2));
-            let size = rng.gen_range(options.size.clone());
+            let radius = rng.gen_range(options.size.clone());
             let lifetime = rng.gen_range(options.lifetime.clone());
             Particle {
                 kind: options.kind,
-                collider: Collider::new(position, Shape::circle(size)),
+                position,
+                radius,
                 velocity,
                 lifetime: Bounded::new_max(lifetime),
             }

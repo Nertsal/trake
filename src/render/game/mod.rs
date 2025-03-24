@@ -162,23 +162,46 @@ impl GameRender {
         }
 
         // Particles
-        for (kind, collider, lifetime) in query!(model.particles, (&kind, &collider, &lifetime)) {
-            let color = match kind {
-                ParticleKind::Steam => Color::try_from("#3d3957aa").unwrap(),
-                ParticleKind::Wall => Color::try_from("#ab1f65").unwrap(),
-                ParticleKind::WagonDestroyed => Color::try_from("#ffda45").unwrap(),
-                ParticleKind::Collect(resource) => match resource {
-                    Resource::Coal => Color::try_from("#ff8142").unwrap(),
-                    Resource::Coin => Color::try_from("#ffda45").unwrap(),
-                    Resource::Diamond => Color::try_from("#49e7ec").unwrap(),
-                    Resource::PlusCent => Color::try_from("#ffda45").unwrap(),
-                    Resource::GhostFuel => Color::try_from("#ff8142").unwrap(),
-                },
-            };
-            let alpha = lifetime.get_ratio().as_f32().sqrt();
-            let color = crate::util::with_alpha(color, alpha);
-            self.util
-                .draw_collider(collider, color, &model.camera, framebuffer);
+        #[derive(ugli::Vertex)]
+        struct ParticleInstance {
+            pub i_color: Rgba<f32>,
+            pub i_model_matrix: mat3<f32>,
         }
+        let instances: Vec<_> = query!(model.particles, (&kind, &position, &radius, &lifetime))
+            .map(|(kind, position, radius, lifetime)| {
+                let color = match kind {
+                    ParticleKind::Steam => Color::try_from("#3d3957aa").unwrap(),
+                    ParticleKind::Wall => Color::try_from("#ab1f65").unwrap(),
+                    ParticleKind::WagonDestroyed => Color::try_from("#ffda45").unwrap(),
+                    ParticleKind::Collect(resource) => match resource {
+                        Resource::Coal => Color::try_from("#ff8142").unwrap(),
+                        Resource::Coin => Color::try_from("#ffda45").unwrap(),
+                        Resource::Diamond => Color::try_from("#49e7ec").unwrap(),
+                        Resource::PlusCent => Color::try_from("#ffda45").unwrap(),
+                        Resource::GhostFuel => Color::try_from("#ff8142").unwrap(),
+                    },
+                };
+                let t = lifetime.get_ratio().as_f32().sqrt();
+                let color = crate::util::with_alpha(color, t);
+                let transform =
+                    mat3::translate(position.as_f32()) * mat3::scale_uniform(radius.as_f32() * t);
+                ParticleInstance {
+                    i_color: color,
+                    i_model_matrix: transform,
+                }
+            })
+            .collect();
+        let instances = ugli::VertexBuffer::new_dynamic(self.context.geng.ugli(), instances);
+        ugli::draw(
+            framebuffer,
+            &self.context.assets.shaders.particles,
+            ugli::DrawMode::TriangleFan,
+            ugli::instanced(&self.util.unit_quad, &instances),
+            (
+                ugli::uniforms! {},
+                model.camera.uniforms(framebuffer.size().as_f32()),
+            ),
+            ugli::DrawParameters { ..default() },
+        );
     }
 }

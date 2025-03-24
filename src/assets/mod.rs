@@ -95,6 +95,7 @@ pub struct ShaderAssets {
     pub ellipse: Rc<ugli::Program>,
     pub masked: Rc<ugli::Program>,
     pub texture_ui: Rc<ugli::Program>,
+    pub particles: Rc<ugli::Program>,
 }
 
 #[derive(geng::asset::Load)]

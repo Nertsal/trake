@@ -95,6 +95,7 @@ impl GameUi {
                 .get_root_or(|| TextWidget::new("Shop").aligned(vec2(0.0, 1.0)));
             text.update(title, context);
 
+            let mut hovered_upgrade = None;
             for (i, item) in model.shop.iter().enumerate() {
                 let mut pos = shop.cut_left(font_size * 3.0);
 
@@ -132,11 +133,39 @@ impl GameUi {
                     context
                         .context
                         .play_sfx(&context.context.assets.sounds.click);
-                } else if !hovered && button.state.hovered {
-                    context
-                        .context
-                        .play_sfx(&context.context.assets.sounds.clop);
+                } else if button.state.hovered {
+                    hovered_upgrade = Some(item.upgrade.clone());
+                    if !hovered {
+                        context
+                            .context
+                            .play_sfx(&context.context.assets.sounds.clop);
+                    }
                 }
+            }
+
+            if let Some(upgrade) = hovered_upgrade {
+                let mut pos = left_bar.cut_bottom(font_size * 2.0);
+                pos.cut_left(font_size * 4.0);
+                pos = pos.with_width(font_size * 10.0, 0.0);
+                let text = context
+                    .state
+                    .get_root_or(|| TextWidget::new("").aligned(vec2(0.0, 0.5)));
+                text.text = match upgrade {
+                    Upgrade::Resource(resource) => match resource {
+                        Resource::PlusCent => "pays dividents for saved score and money",
+                        Resource::GhostFuel => {
+                            "got ghosted by the developer so it doesn't do anything"
+                        }
+                        _ => unimplemented!(),
+                    },
+                    Upgrade::Speed => "train goes brrr",
+                    Upgrade::Feather => {
+                        "light like a feather, sails far away (reduces slowdown effect)"
+                    }
+                    Upgrade::Turning => "oh how quickly the trains have turned",
+                }
+                .into();
+                text.update(pos, context);
             }
         }
 

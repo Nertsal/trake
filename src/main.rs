@@ -14,6 +14,9 @@ use geng::prelude::*;
 
 const OPTIONS_STORAGE: &str = "options";
 
+const FIXED_FPS: f64 = 60.0;
+const GAME_RESOLUTION: vec2<usize> = vec2(640, 360);
+
 #[derive(clap::Parser)]
 struct Opts {
     #[clap(flatten)]
@@ -53,6 +56,7 @@ fn main() {
     let mut options = geng::ContextOptions::default();
     options.with_cli(&opts.geng);
     options.window.title = "Nertplate".into();
+    options.fixed_delta_time = 1.0 / FIXED_FPS;
 
     Geng::run_with(&options, |geng| async move {
         let main = geng_main(geng, opts);

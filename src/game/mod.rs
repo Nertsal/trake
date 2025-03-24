@@ -11,6 +11,7 @@ pub struct GameState {
     render: GameRender,
     render_options: GameRenderOptions,
     model: Model,
+    game_texture: ugli::Texture,
 
     cursor_pos: vec2<f64>,
     cursor_world_pos: vec2<Coord>,
@@ -22,11 +23,15 @@ pub struct GameState {
 
 impl GameState {
     pub fn new(context: Context) -> Self {
+        let mut game_texture =
+            geng_utils::texture::new_texture(context.geng.ugli(), crate::GAME_RESOLUTION);
+        game_texture.set_filter(ugli::Filter::Nearest);
         Self {
             framebuffer_size: vec2(1, 1),
             render: GameRender::new(context.clone()),
             render_options: GameRenderOptions::default(),
             model: Model::new(context.clone(), context.assets.config.clone()),
+            game_texture,
 
             cursor_pos: vec2::ZERO,
             cursor_world_pos: vec2::ZERO,
@@ -116,8 +121,20 @@ impl geng::State for GameState {
             None,
         );
 
+        let mut game_buffer =
+            geng_utils::texture::attach_texture(&mut self.game_texture, self.context.geng.ugli());
+        ugli::clear(
+            &mut game_buffer,
+            Some(Color::try_from("#250f54").unwrap()),
+            None,
+            None,
+        );
         self.render
-            .draw_game(&self.model, &self.render_options, framebuffer);
+            .draw_game(&self.model, &self.render_options, &mut game_buffer);
+        geng_utils::texture::DrawTexture::new(&self.game_texture)
+            .fit_screen(vec2(0.5, 0.5), framebuffer)
+            .draw(&geng::PixelPerfectCamera, &self.context.geng, framebuffer);
+
         self.render.draw_game_ui(&self.model, framebuffer);
     }
 }

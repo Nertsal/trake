@@ -1,6 +1,9 @@
-use super::*;
+use super::{mask::MaskedStack, *};
 
-use crate::model::{Collider, Coord, Shape};
+use crate::{
+    model::{Collider, Coord, Shape},
+    ui::{geometry::Geometry, UiContext},
+};
 
 #[derive(Debug, Clone, Copy)]
 pub struct TextRenderOptions {
@@ -25,6 +28,11 @@ impl TextRenderOptions {
 
     pub fn color(self, color: Color) -> Self {
         Self { color, ..self }
+    }
+
+    pub fn update(&mut self, context: &UiContext) {
+        self.size = context.font_size;
+        self.color = context.theme().light;
     }
 }
 
@@ -57,6 +65,77 @@ impl UtilRender {
             unit_quad: geng_utils::geometry::unit_quad_geometry(context.geng.ugli()),
             context,
         }
+    }
+
+    pub fn draw_geometry(
+        &self,
+        masked: &mut MaskedStack,
+        geometry: Geometry,
+        camera: &impl geng::AbstractCamera2d,
+        framebuffer: &mut ugli::Framebuffer,
+    ) {
+        // log::debug!("Rendering geometry:");
+        // log::debug!("^- triangles: {}", geometry.triangles.len() / 3);
+
+        let framebuffer_size = framebuffer.size().as_f32();
+
+        // Masked
+        let mut frame = masked.pop_mask();
+        for masked_geometry in geometry.masked {
+            let mut masking = frame.start();
+            self.draw_geometry(masked, masked_geometry.geometry, camera, &mut masking.color);
+            masking.mask_quad(masked_geometry.clip_rect);
+            frame.draw(
+                masked_geometry.z_index,
+                ugli::DrawParameters {
+                    blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                    depth_func: Some(ugli::DepthFunc::Less),
+                    ..default()
+                },
+                framebuffer,
+            );
+        }
+        masked.return_mask(frame);
+
+        // Text
+        for text in geometry.text {
+            self.draw_text_with(
+                text.text,
+                text.position,
+                text.z_index,
+                text.options,
+                ugli::DrawParameters {
+                    blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                    depth_func: Some(ugli::DepthFunc::LessOrEqual),
+                    ..default()
+                },
+                camera,
+                framebuffer,
+            );
+        }
+
+        // Triangles & Textures
+        let triangles =
+            ugli::VertexBuffer::new_dynamic(self.context.geng.ugli(), geometry.triangles);
+        ugli::draw(
+            framebuffer,
+            &self.context.assets.shaders.texture_ui,
+            ugli::DrawMode::Triangles,
+            &triangles,
+            (
+                ugli::uniforms! {
+                    u_texture: self.context.assets.atlas.texture(),
+                    u_model_matrix: mat3::identity(),
+                    u_color: Color::WHITE,
+                },
+                camera.uniforms(framebuffer_size),
+            ),
+            ugli::DrawParameters {
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
+                depth_func: Some(ugli::DepthFunc::Less),
+                ..default()
+            },
+        );
     }
 
     pub fn draw_nine_slice(

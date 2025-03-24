@@ -31,6 +31,11 @@ impl Default for Options {
     }
 }
 
+#[derive(Debug,Clone,Copy)]
+pub enum ThemeColor {
+    Dark,Light,Highlight,
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
 pub struct Theme {
     pub dark: Color,
@@ -44,6 +49,16 @@ impl Default for Theme {
             dark: Color::try_from("#000000").unwrap(),
             light: Color::try_from("#ffffff").unwrap(),
             highlight: Color::try_from("#00ffff").unwrap(),
+        }
+    }
+}
+
+impl Theme {
+    pub fn get_color(&self, color: ThemeColor) -> Color {
+        match color {
+            ThemeColor::Dark => self.dark,
+            ThemeColor::Light => self.light,
+            ThemeColor::Highlight => self.highlight,
         }
     }
 }

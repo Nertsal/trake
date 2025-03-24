@@ -1,6 +1,9 @@
 mod ui;
 
-use super::util::*;
+use super::{
+    mask::{MaskedRender, MaskedStack},
+    util::*,
+};
 
 use crate::{model::*, prelude::*};
 
@@ -23,12 +26,21 @@ impl Default for GameRenderOptions {
 pub struct GameRender {
     context: Context,
     util: UtilRender,
+    mask_stack: MaskedStack,
+    ui_texture: ugli::Texture,
+    ui_depth: ugli::Renderbuffer<ugli::DepthComponent>,
 }
 
 impl GameRender {
     pub fn new(context: Context) -> Self {
+        let mut ui_texture = geng_utils::texture::new_texture(context.geng.ugli(), vec2(1, 1));
+        let ui_depth = ugli::Renderbuffer::new(context.geng.ugli(), vec2(1, 1));
+        ui_texture.set_filter(ugli::Filter::Nearest);
         Self {
             util: UtilRender::new(context.clone()),
+            mask_stack: MaskedStack::new(&context.geng, &context.assets),
+            ui_texture,
+            ui_depth,
             context,
         }
     }

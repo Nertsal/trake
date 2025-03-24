@@ -29,10 +29,20 @@ impl GameUi {
         context.layout_size = layout_size;
         context.screen = screen;
 
-        let left_bar = screen.cut_left(screen.width() / 3.0);
+        let mut left_bar = screen.cut_left(screen.width() / 3.0);
         let bottom_bar = screen.cut_bottom(font_size * 6.0);
 
         self.game.update(screen, context);
+
+        // Left bar
+        {
+            let title = left_bar.cut_top(font_size * 2.0);
+
+            let pos = left_bar.cut_top(font_size * 1.0);
+            let score = context.state.get_root_or(|| TextWidget::new("Score"));
+            score.update(pos, context);
+            score.text = format!("Score: {}", model.round_score).into();
+        }
 
         actions
     }

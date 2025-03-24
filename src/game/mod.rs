@@ -166,6 +166,7 @@ impl geng::State for GameState {
             .fit(self.ui.game.position, vec2(0.5, 0.5))
             .draw(&geng::PixelPerfectCamera, &self.context.geng, framebuffer);
 
-        self.render.draw_game_ui(&self.model, framebuffer);
+        self.render
+            .draw_game_ui(&self.model, &self.ui_context, framebuffer);
     }
 }

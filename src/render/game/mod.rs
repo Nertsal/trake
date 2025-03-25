@@ -73,6 +73,7 @@ impl GameRender {
                 depo.position.as_f32(),
                 vec2(0.5, 0.5),
                 depo.rotation.map(R32::as_f32),
+                1.0,
                 &model.camera,
                 framebuffer,
             );
@@ -90,6 +91,7 @@ impl GameRender {
                 position.as_f32(),
                 vec2(0.5, 0.5),
                 Angle::from_degrees(90.0) * (rail.orientation.rotation as f32 - 1.0),
+                1.0,
                 &model.camera,
                 framebuffer,
             );
@@ -110,6 +112,7 @@ impl GameRender {
                 position.as_f32(),
                 vec2(0.5, 0.5),
                 Angle::ZERO,
+                1.0,
                 &model.camera,
                 framebuffer,
             );

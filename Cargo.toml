@@ -14,12 +14,12 @@ async-compat = "0.2.4"
 async-executor = "1.13.1"
 clap = { version = "4.5.32", features = ["derive"] }
 geng = "0.18"
-geng-utils = "0.3.0"
+geng-utils = "0.4.0"
 parry2d = "0.13.5"
 rusttype = { version = "0.9.3", features = ["gpu_cache"] }
 serde = { version = "1.0.219", features = ["derive"] }
 stecs = { git = "https://github.com/nertsal/stecs", branch = "dynamic", version = "0.1.1" }
 
 [patch.crates-io]
-async-broadcast = { git = "https://github.com/kuviman/async-broadcast", branch = "fix-wasm" } # TODO: until https://github.com/smol-rs/async-broadcast/pull/47 is merged
-geng = { git = "https://github.com/geng-engine/geng", rev = "38a550f6389d8b2720fefd2f42b5fb58fba106c2" }
+geng = { git = "https://github.com/geng-engine/geng", rev = "3a94dac77da86049059d5fbb21a4feb916d67c22" }
+geng-utils = { git = "https://github.com/Nertsal/geng-utils", rev = "2aa72f4c4a9bb8c0ac36af9a5c1c23f39c995490" }

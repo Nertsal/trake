@@ -246,7 +246,7 @@ impl Model {
             camera: Camera2d {
                 center: vec2::ZERO,
                 rotation: Angle::ZERO,
-                fov: 16.0,
+                fov: Camera2dFov::Vertical(16.0),
             },
             grid: Grid {
                 cell_size: vec2::splat(1.0).as_r32(),

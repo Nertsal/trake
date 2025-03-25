@@ -69,7 +69,7 @@ impl Context {
         let ctx = Self {
             geng: geng.clone(),
             assets: assets.clone(),
-            music: Rc::new(MusicManager::new()),
+           music: Rc::new(MusicManager::new(geng.clone())),
             options: Rc::new(RefCell::new(Options::default())),
         };
         ctx.force_set_options(options);
@@ -101,7 +101,7 @@ impl Context {
     pub fn play_sfx(&self, sfx: &geng::Sound) {
         let options = self.get_options();
         let volume = options.master_volume * options.sfx_volume;
-        let mut sfx = sfx.effect();
+        let mut sfx = sfx.effect(self.geng.audio().default_type());
         sfx.set_volume(volume);
         sfx.play();
     }

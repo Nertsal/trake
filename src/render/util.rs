@@ -138,18 +138,21 @@ impl UtilRender {
         );
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn draw_texture_pp(
         &self,
         texture: &ugli::Texture,
         position: vec2<f32>,
         align: vec2<f32>,
         rotation: Angle<f32>,
+        pixel_scale: f32,
         camera: &impl geng::AbstractCamera2d,
         framebuffer: &mut ugli::Framebuffer,
     ) {
         let draw = geng_utils::texture::DrawTexture::new(texture).pixel_perfect(
             position,
             align,
+            pixel_scale,
             camera,
             framebuffer,
         );

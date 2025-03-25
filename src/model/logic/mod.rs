@@ -202,7 +202,18 @@ impl Model {
         let Some(tail) = self.train.blocks.back() else {
             return;
         };
-        let mut space_left = self.config.train.wagon_spacing + self.config.train.wagon_size.x;
+
+        let mut rng = thread_rng();
+
+        let wagon_size = self.config.train.wagon_size
+            + vec2(rng.gen_range(-0.1..=0.1), rng.gen_range(-0.1..=0.1)).as_r32();
+
+        let radius = |block: &TrainBlock| match block.collider.shape {
+            Shape::Circle { radius } => radius,
+            Shape::Rectangle { width, .. } => width * r32(0.5),
+        };
+
+        let mut space_left = self.config.train.wagon_spacing + radius(tail) + wagon_size.x;
         let (anchor, dir) = if let Some((to, from)) = std::iter::once(tail.collider.position)
             .chain(tail.path.iter().copied())
             .tuple_windows()
@@ -225,7 +236,7 @@ impl Model {
         self.train.blocks.push_back(TrainBlock {
             kind,
             collider: Collider {
-                shape: Shape::rectangle(self.config.train.wagon_size),
+                shape: Shape::rectangle(wagon_size),
                 position,
                 rotation,
             },
@@ -378,7 +389,12 @@ impl Model {
                 }
             };
 
-            let mut space_left = self.config.train.wagon_spacing + self.config.train.wagon_size.x;
+            let radius = |block: &TrainBlock| match block.collider.shape {
+                Shape::Circle { radius } => radius,
+                Shape::Rectangle { width, .. } => width * r32(0.5),
+            };
+
+            let mut space_left = self.config.train.wagon_spacing + radius(wagon) + radius(head);
             if let Some((i, (to, from))) = std::iter::once(head.collider.position)
                 .chain(head.path.iter().copied())
                 .chain(std::iter::once(wagon.collider.position))

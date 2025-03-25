@@ -40,11 +40,8 @@ pub struct GameState {
 
     cursor_pos: vec2<f64>,
     cursor_world_pos: vec2<Coord>,
-    cursor_grid_pos: vec2<ICoord>,
 
     player_input: PlayerInput,
-    place_rail_kind: RailKind,
-    place_rotation: usize,
 }
 
 impl GameState {
@@ -63,11 +60,8 @@ impl GameState {
 
             cursor_pos: vec2::ZERO,
             cursor_world_pos: vec2::ZERO,
-            cursor_grid_pos: vec2::ZERO,
 
             player_input: PlayerInput::default(),
-            place_rail_kind: RailKind::Straight,
-            place_rotation: 0,
 
             ui_context: UiContext::new(context.clone()),
             unit_quad: geng_utils::geometry::unit_quad_geometry(context.geng.ugli()),
@@ -80,43 +74,11 @@ impl GameState {
             geng::Key::F2 => {
                 self.render_options.show_colliders = !self.render_options.show_colliders;
             }
-            geng::Key::Q => {
-                self.place_rotation = (self.place_rotation + 1) % 4;
-            }
-            geng::Key::E => {
-                self.place_rotation = if self.place_rotation == 0 {
-                    3
-                } else {
-                    self.place_rotation - 1
-                };
-            }
-            geng::Key::Digit1 => {
-                self.place_rail_kind = RailKind::Straight;
-            }
-            geng::Key::Digit2 => {
-                self.place_rail_kind = RailKind::Left;
-            }
-            geng::Key::G => {
-                self.model.grid_items.insert(GridItem {
-                    position: self.cursor_grid_pos,
-                    rail: None,
-                    resource: Some(Resource::Coal),
-                    wall: None,
-                });
-            }
             _ => {}
         }
     }
 
-    fn handle_mouse(&mut self, _button: geng::MouseButton) {
-        self.model.place_rail(
-            self.cursor_grid_pos,
-            RailOrientation {
-                kind: self.place_rail_kind,
-                rotation: self.place_rotation,
-            },
-        )
-    }
+    fn handle_mouse(&mut self, _button: geng::MouseButton) {}
 }
 
 impl geng::State for GameState {
@@ -155,7 +117,6 @@ impl geng::State for GameState {
                     .camera
                     .screen_to_world(game.size().as_f32(), position)
                     .as_r32();
-                self.cursor_grid_pos = self.model.grid.world_to_grid(self.cursor_world_pos);
             }
             geng::Event::Wheel { delta } => {
                 self.ui_context.cursor.scroll += delta as f32;

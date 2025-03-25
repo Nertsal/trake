@@ -43,21 +43,6 @@ impl GameUi {
         {
             let title = left_bar.cut_top(font_size * 2.0);
 
-            let pos = left_bar.cut_top(font_size * 1.0);
-            let score = context.state.get_root_or(|| TextWidget::new("Quota"));
-            score.update(pos, context);
-            score.text = format!("Quota: {}/{}", model.quota_score, model.current_quota).into();
-
-            let pos = left_bar.cut_top(font_size * 1.0);
-            let score = context.state.get_root_or(|| TextWidget::new("Day"));
-            score.update(pos, context);
-            score.text = format!("Day: {}/3", model.quota_day).into();
-
-            let pos = left_bar.cut_top(font_size * 1.0);
-            let score = context.state.get_root_or(|| TextWidget::new("Score"));
-            score.update(pos, context);
-            score.text = format!("Score: {}", model.round_score).into();
-
             let mut right = left_bar
                 .cut_top(font_size * 1.0)
                 .with_width(font_size * 3.0, 0.5);
@@ -117,11 +102,6 @@ impl GameUi {
                     .get_root_or(|| IconButtonWidget::new_normal(atlas.circle()));
                 button.can_click = item.can_purchase;
                 button.icon.texture = match item.upgrade {
-                    Upgrade::Resource(resource) => match resource {
-                        Resource::PlusCent => atlas.plus_cent(),
-                        Resource::GhostFuel => atlas.ghost_fuel(),
-                        _ => unimplemented!(),
-                    },
                     Upgrade::Speed => atlas.speed(),
                     Upgrade::Feather => atlas.feather(),
                     Upgrade::Turning => atlas.spiral(),
@@ -151,13 +131,6 @@ impl GameUi {
                     .state
                     .get_root_or(|| TextWidget::new("").aligned(vec2(0.0, 0.5)));
                 text.text = match upgrade {
-                    Upgrade::Resource(resource) => match resource {
-                        Resource::PlusCent => "pays dividents for saved score and money",
-                        Resource::GhostFuel => {
-                            "got ghosted by the developer so it doesn't do anything"
-                        }
-                        _ => unimplemented!(),
-                    },
                     Upgrade::Speed => "train goes brrr",
                     Upgrade::Feather => {
                         "light like a feather, sails far away (reduces slowdown effect)"

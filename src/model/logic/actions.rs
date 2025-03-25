@@ -7,11 +7,9 @@ impl Model {
                 self.money -= item.price;
                 item.can_purchase = false;
                 match item.upgrade {
-                    Upgrade::Resource(resource) => self.deck.resources.push(resource),
                     Upgrade::Speed => {
                         let mult = r32(1.2);
-                        self.config.train.rail_speed *= mult;
-                        self.config.train.offrail_speed *= mult;
+                        self.config.train.speed *= mult;
                     }
                     Upgrade::Feather => {
                         self.config.train.overtime_slowdown *= r32(0.9);
@@ -29,24 +27,11 @@ impl Model {
     pub fn launch_train(&mut self) {
         let Phase::Setup = self.phase else { return };
 
-        let speed = self.config.train.rail_speed;
+        let speed = self.config.train.speed;
         self.train.target_speed = speed;
         self.train.train_speed = speed;
 
         self.phase = Phase::Resolution;
         self.context.play_sfx(&self.context.assets.sounds.choochoo);
-    }
-
-    pub fn place_rail(&mut self, position: vec2<ICoord>, orientation: RailOrientation) {
-        if query!(self.grid_items, (&position)).any(|&pos| pos == position) {
-            return;
-        }
-
-        self.grid_items.insert(GridItem {
-            position,
-            rail: Some(Rail { orientation }),
-            resource: None,
-            wall: None,
-        });
     }
 }

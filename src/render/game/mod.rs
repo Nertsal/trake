@@ -49,13 +49,7 @@ impl GameRender {
         framebuffer: &mut ugli::Framebuffer,
     ) {
         // Wall
-        let bounds = Aabb2::from_corners(
-            model.grid.gridf_to_world(vec2(0.5, 0.5).as_r32()),
-            model
-                .grid
-                .gridf_to_world(model.config.map_size.map(|x| r32(x as f32 + 0.5))),
-        )
-        .extend_uniform(r32(0.15));
+        let bounds = model.map_bounds.extend_uniform(r32(0.15));
         self.util.draw_outline(
             &Collider::aabb(bounds),
             0.15,
@@ -79,27 +73,8 @@ impl GameRender {
             );
         }
 
-        // Rails
-        for (&pos, rail) in query!(model.grid_items, (&position, &rail.Get.Some)) {
-            let position = model.grid.grid_to_world(pos);
-            let texture = match rail.orientation.kind {
-                RailKind::Straight => &self.context.assets.sprites.rail_straight,
-                RailKind::Left => &self.context.assets.sprites.rail_left,
-            };
-            self.util.draw_texture_pp(
-                texture,
-                position.as_f32(),
-                vec2(0.5, 0.5),
-                Angle::from_degrees(90.0) * (rail.orientation.rotation as f32 - 1.0),
-                1.0,
-                &model.camera,
-                framebuffer,
-            );
-        }
-
         // Resources
-        for (&pos, resource) in query!(model.grid_items, (&position, &resource.Get.Some)) {
-            let position = model.grid.grid_to_world(pos);
+        for (&position, resource) in query!(model.grid_items, (&position, &resource.Get.Some)) {
             let texture = match resource {
                 Resource::Coal => &self.context.assets.sprites.coal,
                 Resource::Coin => &self.context.assets.sprites.coin,

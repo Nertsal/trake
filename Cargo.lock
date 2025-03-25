@@ -1998,7 +1998,7 @@ dependencies = [
 [[package]]
 name = "geng-utils"
 version = "0.4.0"
-source = "git+https://github.com/Nertsal/geng-utils?rev=2aa72f4c4a9bb8c0ac36af9a5c1c23f39c995490#2aa72f4c4a9bb8c0ac36af9a5c1c23f39c995490"
+source = "git+https://github.com/Nertsal/geng-utils?rev=f6e07e1db3096d710d5242c80c3781fd2d554045#f6e07e1db3096d710d5242c80c3781fd2d554045"
 dependencies = [
  "geng",
  "image",

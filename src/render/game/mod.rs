@@ -125,14 +125,14 @@ impl GameRender {
             self.context.geng.draw2d().draw2d(
                 framebuffer,
                 &model.camera,
-                &draw2d::Quad::new(size, palette.locomotive_bottom)
+                &draw2d::Quad::new(size, palette.wagon_bottom)
                     .rotate(block.collider.rotation.map(R32::as_f32))
                     .translate(block.collider.position.as_f32()),
             );
             self.context.geng.draw2d().draw2d(
                 framebuffer,
                 &model.camera,
-                &draw2d::Quad::new(size, palette.locomotive_top)
+                &draw2d::Quad::new(size, palette.wagon_top)
                     .rotate(block.collider.rotation.map(R32::as_f32))
                     .translate(block.collider.position.as_f32() + vec2(-0.1, 0.1)),
             );
@@ -160,6 +160,20 @@ impl GameRender {
             }
         }
 
+        // Range circles
+        for wagon in &model.train.wagons {
+            if let Some(collect) = &wagon.stats.collect {
+                // TODO: seemless circles (without gaps between pixels when drawing thin)
+                self.util.draw_outline(
+                    &Collider::circle(wagon.collider.position, collect.range),
+                    0.05,
+                    palette.range_circle,
+                    &model.camera,
+                    framebuffer,
+                );
+            }
+        }
+
         // Particles
         #[derive(ugli::Vertex)]
         struct ParticleInstance {
@@ -171,7 +185,7 @@ impl GameRender {
                 let color = match kind {
                     ParticleKind::Steam => palette.steam,
                     ParticleKind::Wall => palette.wall,
-                    ParticleKind::WagonDestroyed => palette.locomotive_bottom,
+                    ParticleKind::WagonDestroyed => palette.wagon_bottom,
                     ParticleKind::Collect(resource) => palette
                         .resources
                         .get(resource)

@@ -1,7 +1,8 @@
 default_color = "#FF00FF"
-background = "#2B0F54" # "#FFF7F8"
-locomotive_top = "#FF8142"
-locomotive_bottom = "#FFDA45"
+background = "#2B0F54"
+wagon_top = "#FF8142"
+wagon_bottom = "#FFDA45"
+range_circle = "#FFF7F8"
 wall = "#AB1F65"
 steam = "#3D3957AA"
 

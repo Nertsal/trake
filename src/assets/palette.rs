@@ -9,8 +9,9 @@ use crate::{model::ResourceKind, prelude::Color};
 pub struct Palette {
     pub default_color: Color,
     pub background: Color,
-    pub locomotive_bottom: Color,
-    pub locomotive_top: Color,
+    pub wagon_bottom: Color,
+    pub wagon_top: Color,
+    pub range_circle: Color,
     pub wall: Color,
     pub steam: Color,
 

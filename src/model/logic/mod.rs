@@ -170,7 +170,7 @@ impl Model {
     }
 
     fn collide_train(&mut self, _delta_time: FloatTime) {
-        let Some(head) = self.train.blocks.front_mut() else {
+        let Some(head) = self.train.wagons.front_mut() else {
             return;
         };
 
@@ -202,7 +202,7 @@ impl Model {
         }
 
         if collision {
-            let block = self.train.blocks.pop_front().unwrap();
+            let block = self.train.wagons.pop_front().unwrap();
             // TODO: lose health
             // let plus_score =
             //     -(self.round_score as f32 * thread_rng().gen_range(0.15..=0.25)).ceil() as Score;
@@ -231,27 +231,24 @@ impl Model {
         }
     }
 
-    fn add_wagon(&mut self, kind: TrainBlockKind) {
-        let Some(tail) = self.train.blocks.back() else {
+    fn add_wagon(&mut self, stats: WagonStats) {
+        let Some(tail) = self.train.wagons.back() else {
             return;
         };
 
-        let mut rng = thread_rng();
+        let wagon_size = stats.size;
 
-        let wagon_size = self.config.train.wagon_size
-            + vec2(rng.gen_range(-0.1..=0.1), rng.gen_range(-0.1..=0.1)).as_r32();
-
-        let radius = |block: &TrainBlock| match block.collider.shape {
+        let radius = |block: &Wagon| match block.collider.shape {
             Shape::Circle { radius } => radius,
             Shape::Rectangle { width, .. } => width * r32(0.5),
             Shape::RectangleOutline { width, .. } => width * r32(0.5),
         };
 
-        let space = self.config.train.wagon_spacing + wagon_size.x + radius(tail);
+        let space = self.config.train.wagon_spacing + wagon_size.x / r32(2.0) + radius(tail);
         let position = tail.collider.position - tail.collider.rotation.unit_vec() * space;
         let rotation = tail.collider.rotation;
-        self.train.blocks.push_back(TrainBlock {
-            kind,
+        self.train.wagons.push_back(Wagon {
+            stats,
             collider: Collider {
                 shape: Shape::rectangle(wagon_size),
                 position,
@@ -261,13 +258,12 @@ impl Model {
     }
 
     fn move_train(&mut self, delta_time: FloatTime, player_input: &PlayerInput) {
-        if self.train.blocks.is_empty() {
+        if self.train.wagons.is_empty() {
             self.next_round();
             return;
         }
 
-        // Returns whether the wagon is on a rail
-        let move_head = |wagon: &mut TrainBlock, player_input: &PlayerInput| {
+        let move_head = |wagon: &mut Wagon, player_input: &PlayerInput| {
             // Turn by player input
             wagon.collider.rotation += self.config.train.turn_speed
                 * player_input.turn
@@ -279,9 +275,8 @@ impl Model {
                 wagon.collider.rotation.unit_vec() * self.train.train_speed * delta_time;
         };
 
-        // Returns whether the wagon is on a rail
-        let move_wagon = |head: &mut TrainBlock, wagon: &mut TrainBlock| {
-            let radius = |block: &TrainBlock| match block.collider.shape {
+        let move_wagon = |head: &mut Wagon, wagon: &mut Wagon| {
+            let radius = |block: &Wagon| match block.collider.shape {
                 Shape::Circle { radius } => radius,
                 Shape::Rectangle { width, .. } => width * r32(0.5),
                 Shape::RectangleOutline { width, .. } => width * r32(0.5),
@@ -295,15 +290,14 @@ impl Model {
         };
 
         // Move wagons
-        let mut blocks = self.train.blocks.iter_mut();
+        let mut blocks = self.train.wagons.iter_mut();
         if let Some(mut head) = blocks.next() {
             self.particles_queue.push(SpawnParticles {
                 kind: ParticleKind::Steam,
                 density: r32(4.0) * self.train.train_speed.clamp(r32(0.5), r32(5.0)),
                 distribution: ParticleDistribution::Circle {
                     center: head.collider.position
-                        + head.collider.rotation.unit_vec() * self.config.train.wagon_size.x
-                            / r32(2.5),
+                        + head.collider.rotation.unit_vec() * head.stats.size.x / r32(2.5),
                     radius: r32(0.1),
                 },
                 size: r32(0.05)..=r32(0.15),

@@ -12,13 +12,15 @@ pub struct Config {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrainConfig {
+    pub starter_wagons: Vec<WagonStats>,
+
+    pub wagon_spacing: Coord,
+
     pub overtime_slowdown: Coord,
     pub turn_speed: Angle<Coord>,
     pub speed: Coord,
     pub acceleration: Coord,
     pub deceleration: Coord,
-    pub wagon_size: vec2<Coord>,
-    pub wagon_spacing: Coord,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

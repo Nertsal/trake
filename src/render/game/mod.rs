@@ -115,7 +115,7 @@ impl GameRender {
         }
 
         // Train
-        for block in &model.train.blocks {
+        for block in &model.train.wagons {
             let size = match block.collider.shape {
                 Shape::Circle { .. } => todo!(),
                 Shape::Rectangle { width, height } | Shape::RectangleOutline { width, height } => {

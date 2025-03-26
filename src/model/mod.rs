@@ -2,9 +2,10 @@ mod collider;
 mod config;
 mod logic;
 mod particles;
+mod train;
 mod types;
 
-pub use self::{collider::*, config::*, particles::*, types::*};
+pub use self::{collider::*, config::*, particles::*, train::*, types::*};
 
 use crate::prelude::*;
 
@@ -51,13 +52,13 @@ impl Model {
 
             phase: Phase::Setup,
             deck: Deck {
-                wagons: vec![TrainBlockKind::Locomotive],
+                wagons: config.train.starter_wagons.clone(),
             },
             train: Train {
                 in_depo: false,
                 target_speed: r32(0.0),
                 train_speed: r32(0.0),
-                blocks: vec![].into(),
+                wagons: vec![].into(),
             },
             depo: Collider::aabb(Aabb2::ZERO),
             shop: Vec::new(),

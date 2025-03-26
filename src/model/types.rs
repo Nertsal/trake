@@ -5,6 +5,7 @@ pub type FloatTime = R32;
 pub type Money = i64;
 pub type MoneyFraction = R32;
 pub type ResourceCount = i64;
+pub type Hp = R32;
 
 #[derive(Debug, Clone)]
 pub struct PlayerInput {
@@ -16,45 +17,6 @@ impl Default for PlayerInput {
     fn default() -> Self {
         Self { turn: Coord::ZERO }
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct Train {
-    pub in_depo: bool,
-    pub target_speed: Coord,
-    pub train_speed: Coord,
-    pub blocks: VecDeque<TrainBlock>,
-}
-
-#[derive(Debug, Clone)]
-pub struct TrainBlock {
-    pub kind: TrainBlockKind,
-    pub collider: Collider,
-}
-
-impl TrainBlock {
-    pub fn new_locomotive(config: &TrainConfig, position: vec2<Coord>) -> Self {
-        Self::new(config, position, TrainBlockKind::Locomotive)
-    }
-
-    pub fn new_wagon(config: &TrainConfig, position: vec2<Coord>) -> Self {
-        Self::new(config, position, TrainBlockKind::Wagon)
-    }
-
-    pub fn new(config: &TrainConfig, position: vec2<Coord>, kind: TrainBlockKind) -> Self {
-        Self {
-            collider: Collider::aabb(
-                Aabb2::point(position).extend_symmetric(config.wagon_size / r32(2.0)),
-            ),
-            kind,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum TrainBlockKind {
-    Locomotive,
-    Wagon,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -98,7 +60,7 @@ pub enum Phase {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Deck {
-    pub wagons: Vec<TrainBlockKind>,
+    pub wagons: Vec<WagonStats>,
 }
 
 #[derive(Debug, Clone)]

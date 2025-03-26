@@ -27,16 +27,20 @@ impl Model {
         );
 
         // Train
+        let mut wagons = self.deck.wagons.clone().into_iter();
         self.train = Train {
             in_depo: true,
             target_speed: r32(0.0),
             train_speed: r32(0.0),
-            blocks: vec![TrainBlock::new_locomotive(
-                &self.config.train,
-                self.depo.position,
-            )]
-            .into(),
+            wagons: wagons
+                .next()
+                .into_iter()
+                .map(|stats| Wagon::new(&self.config.train, self.depo.position, stats))
+                .collect(),
         };
+        for wagon in wagons {
+            self.add_wagon(wagon);
+        }
 
         // Cleanup
         let ids: Vec<_> = query!(self.items, (id, &wall))

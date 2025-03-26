@@ -36,12 +36,12 @@ per_collection = 10
 
 [resources.Coal]
 value = 0.75
-amount = 20
+amount = 8
 speed = 1.6
 per_collection = 4
 
 [resources.Food]
 value = 1.0
-amount = 30
+amount = 3
 speed = 2.0
 per_collection = 1

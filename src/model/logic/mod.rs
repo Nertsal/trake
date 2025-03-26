@@ -27,6 +27,8 @@ impl Model {
     }
 
     fn update_resources(&mut self, delta_time: FloatTime) {
+        let mut rng = thread_rng();
+
         let mut remove = Vec::new();
         for (id, resource) in query!(self.items, (id, &mut resource.Get.Some)) {
             match &mut resource.state {
@@ -45,8 +47,27 @@ impl Model {
                 }
             }
         }
+
         for id in remove {
-            self.items.remove(id);
+            let item = self.items.remove(id).unwrap();
+            let resource = item.resource.unwrap();
+            if let Some(data) = self.config.resources.get(&resource.kind).cloned() {
+                if let Some(position) =
+                    generation::select_position(&mut rng, self.map_bounds, r32(0.5), &self.items)
+                {
+                    self.items.insert(Item {
+                        position,
+                        resource: Some(ResourceNode {
+                            kind: resource.kind,
+                            data,
+                            state: ResourceNodeState::Spawning(Bounded::new_zero(
+                                self.config.resource.spawn_time,
+                            )),
+                        }),
+                        wall: None,
+                    });
+                }
+            }
         }
     }
 
@@ -153,6 +174,7 @@ impl Model {
                             ));
                         }
                         collect_sfx = true;
+                        collect.collecting = None; // Search again in case there is another one closer
 
                         // TODO: transfer to wagon storage
 

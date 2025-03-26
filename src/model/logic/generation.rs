@@ -54,26 +54,11 @@ impl Model {
         }
 
         // Spawn items
-        let select_position = |rng: &mut ThreadRng,
-                               radius: Coord,
-                               items: &StructOf<Arena<Item>>|
-         -> Option<vec2<Coord>> {
-            let area = self.map_bounds.extend_uniform(-radius);
-            for _ in 0..10 {
-                let pos = vec2(
-                    rng.gen_range(area.min.x..=area.max.x),
-                    rng.gen_range(area.min.y..=area.max.y),
-                );
-                if query!(items, (&position)).any(|&other_pos| (pos - other_pos).len() < radius) {
-                    continue;
-                }
-                return Some(pos);
-            }
-            None
-        };
 
         for (&kind, config) in &self.config.resources {
-            if let Some(position) = select_position(&mut rng, r32(0.5), &self.items) {
+            if let Some(position) =
+                select_position(&mut rng, self.map_bounds, r32(0.5), &self.items)
+            {
                 let config = config.clone();
                 self.items.insert(Item {
                     position,
@@ -116,4 +101,24 @@ impl Model {
 
         self.phase = Phase::Setup;
     }
+}
+
+pub fn select_position(
+    rng: &mut ThreadRng,
+    map_bounds: Aabb2<Coord>,
+    radius: Coord,
+    items: &StructOf<Arena<Item>>,
+) -> Option<vec2<Coord>> {
+    let area = map_bounds.extend_uniform(-radius);
+    for _ in 0..10 {
+        let pos = vec2(
+            rng.gen_range(area.min.x..=area.max.x),
+            rng.gen_range(area.min.y..=area.max.y),
+        );
+        if query!(items, (&position)).any(|&other_pos| (pos - other_pos).len() < radius) {
+            continue;
+        }
+        return Some(pos);
+    }
+    None
 }

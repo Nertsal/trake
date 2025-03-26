@@ -125,7 +125,7 @@ impl<T: 'static> geng::State for LoadingScreen<T> {
 
         let framebuffer_size = framebuffer.size().as_f32();
         let font_size = framebuffer_size.y * 0.08;
-        let theme = self.assets.palette;
+        let theme = &self.assets.palette;
 
         let screen = Aabb2::ZERO.extend_positive(framebuffer_size);
         let camera = &geng::PixelPerfectCamera;

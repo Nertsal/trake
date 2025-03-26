@@ -1,3 +1,4 @@
+default_color = "#FF00FF"
 background = "#2B0F54" # "#FFF7F8"
 locomotive_top = "#FF8142"
 locomotive_bottom = "#FFDA45"
@@ -10,3 +11,8 @@ text_negative = "#FF4F69"
 dark = "#2B0F54"
 light = "#FFF7F8"
 highlight = "#49E7EC"
+
+[resources]
+Wood = "#66333D"
+Coal = "#57404E"
+Food = "#FF8142"

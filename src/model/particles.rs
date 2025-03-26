@@ -34,7 +34,7 @@ pub enum ParticleKind {
     Steam,
     Wall,
     WagonDestroyed,
-    Collect(Resource),
+    Collect(ResourceKind),
 }
 
 #[derive(Debug, Clone)]

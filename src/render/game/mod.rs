@@ -48,7 +48,7 @@ impl GameRender {
         options: &GameRenderOptions,
         framebuffer: &mut ugli::Framebuffer,
     ) {
-        let palette = self.context.assets.palette;
+        let palette = &self.context.assets.palette;
 
         // Wall
         let bounds = model.map_bounds.extend_uniform(r32(0.15));
@@ -77,19 +77,31 @@ impl GameRender {
 
         // Resources
         for (&position, resource) in query!(model.items, (&position, &resource.Get.Some)) {
-            let texture = match resource {
-                Resource::Coal => &self.context.assets.sprites.coal,
-                Resource::Coin => &self.context.assets.sprites.coin,
-                Resource::Diamond => &self.context.assets.sprites.diamond,
-                Resource::PlusCent => &self.context.assets.sprites.plus_cent,
-                Resource::GhostFuel => &self.context.assets.sprites.ghost_fuel,
-            };
-            self.util.draw_texture_pp(
-                texture,
-                position.as_f32(),
-                vec2(0.5, 0.5),
-                Angle::ZERO,
-                1.0,
+            // let texture = match resource.kind {
+            //     ResourceKind::Wood => &self.context.assets.sprites.wood,
+            //     ResourceKind::Coal => &self.context.assets.sprites.coal,
+            //     ResourceKind::Food => &self.context.assets.sprites.food,
+            // };
+            // self.util.draw_texture_pp(
+            //     texture,
+            //     position.as_f32(),
+            //     vec2(0.5, 0.5),
+            //     Angle::ZERO,
+            //     1.0,
+            //     &model.camera,
+            //     framebuffer,
+            // );
+
+            let radius = r32(0.1);
+            let color = palette
+                .resources
+                .get(&resource.kind)
+                .copied()
+                .unwrap_or(palette.default_color);
+
+            self.util.draw_collider(
+                &Collider::circle(position, radius),
+                color,
                 &model.camera,
                 framebuffer,
             );
@@ -153,13 +165,11 @@ impl GameRender {
                     ParticleKind::Steam => palette.steam,
                     ParticleKind::Wall => palette.wall,
                     ParticleKind::WagonDestroyed => palette.locomotive_bottom,
-                    ParticleKind::Collect(resource) => match resource {
-                        Resource::Coal => Color::try_from("#ff8142").unwrap(),
-                        Resource::Coin => Color::try_from("#ffda45").unwrap(),
-                        Resource::Diamond => Color::try_from("#49e7ec").unwrap(),
-                        Resource::PlusCent => Color::try_from("#ffda45").unwrap(),
-                        Resource::GhostFuel => Color::try_from("#ff8142").unwrap(),
-                    },
+                    ParticleKind::Collect(resource) => palette
+                        .resources
+                        .get(resource)
+                        .copied()
+                        .unwrap_or_else(|| Color::try_from("#ff00ff").unwrap()),
                 };
                 let t = lifetime.get_ratio().as_f32().sqrt();
                 let color = crate::util::with_alpha(color, t);

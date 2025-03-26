@@ -141,7 +141,7 @@ impl geng::State for GameState {
             self.execute(action);
         }
 
-        let palette = self.context.assets.palette;
+        let palette = &self.context.assets.palette;
 
         self.framebuffer_size = framebuffer.size();
         let bg_color = palette.background;

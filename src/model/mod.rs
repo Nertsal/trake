@@ -9,6 +9,8 @@ use crate::prelude::*;
 pub type Coord = R32;
 pub type FloatTime = R32;
 pub type Money = i64;
+pub type MoneyFraction = R32;
+pub type ResourceCount = i64;
 
 #[derive(Debug, Clone)]
 pub struct PlayerInput {
@@ -62,12 +64,16 @@ pub enum TrainBlockKind {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-pub enum Resource {
+pub enum ResourceKind {
+    Wood,
     Coal,
-    Coin,
-    Diamond,
-    PlusCent,
-    GhostFuel,
+    Food,
+}
+
+#[derive(Debug, Clone)]
+pub struct ResourceNode {
+    pub kind: ResourceKind,
+    pub config: ResourceConfig,
 }
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
@@ -76,7 +82,7 @@ pub struct Config {
     pub map_size: vec2<Coord>,
     pub depo_size: vec2<Coord>,
     pub train: TrainConfig,
-    pub resources: HashMap<Resource, ResourceConfig>,
+    pub resources: HashMap<ResourceKind, ResourceConfig>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -92,8 +98,14 @@ pub struct TrainConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ResourceConfig {
-    pub value: Money,
-    pub rarity: R32,
+    /// Conversion rate into gold.
+    pub value: MoneyFraction,
+    /// The total amount of resources left on this node.
+    pub amount: ResourceCount,
+    /// How many times per second this resource is collected (by default).
+    pub speed: R32,
+    /// How many resources to transfer per single collection.
+    pub per_collection: ResourceCount,
 }
 
 #[derive(Debug, Clone)]
@@ -104,7 +116,7 @@ pub struct Wall {
 #[derive(SplitFields, Debug, Clone)]
 pub struct Item {
     pub position: vec2<Coord>,
-    pub resource: Option<Resource>,
+    pub resource: Option<ResourceNode>,
     pub wall: Option<Wall>,
 }
 
@@ -144,6 +156,7 @@ pub struct Model {
     pub round_time: FloatTime,
 
     pub money: Money,
+    pub resources: AssocList<ResourceKind, ResourceCount>,
 
     pub phase: Phase,
     pub deck: Deck,
@@ -171,6 +184,7 @@ impl Model {
             round_time: FloatTime::ZERO,
 
             money: 0,
+            resources: AssocList::new(),
 
             phase: Phase::Setup,
             deck: Deck {

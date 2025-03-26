@@ -232,6 +232,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 
 [[package]]
+name = "associated_list"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "02c358b34715554cebf48073fd6f21139fa89d301bf058f025684860a8b851e6"
+
+[[package]]
 name = "async-broadcast"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5140,6 +5146,7 @@ name = "trake"
 version = "0.1.0"
 dependencies = [
  "anymap3",
+ "associated_list",
  "async-compat",
  "async-executor",
  "clap",

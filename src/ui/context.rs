@@ -214,9 +214,9 @@ impl UiContext {
         }
     }
 
-    pub fn theme(&self) -> Palette {
+    pub fn theme(&self) -> &Palette {
         // self.context.get_options().theme
-        self.context.assets.palette
+        &self.context.assets.palette
     }
 
     // TODO: better

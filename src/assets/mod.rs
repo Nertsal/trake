@@ -80,10 +80,9 @@ pub struct SpriteAssets {
     pub wall: Rc<PixelTexture>,
     pub depo: Rc<PixelTexture>,
 
-    pub coal: Rc<PixelTexture>,
-    pub coin: Rc<PixelTexture>,
-    pub diamond: Rc<PixelTexture>,
-    pub plus_cent: Rc<PixelTexture>,
+    // pub wood: Rc<PixelTexture>,
+    // pub coal: Rc<PixelTexture>,
+    // pub food: Rc<PixelTexture>,
 
     pub ghost_fuel: Rc<PixelTexture>,
     pub speed: Rc<PixelTexture>,

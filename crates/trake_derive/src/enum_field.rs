@@ -4,7 +4,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 
 #[derive(FromDeriveInput)]
-#[darling(supports(struct_named))]
+#[darling(supports(struct_named), attributes(enum_field))]
 pub struct EnumStructOpts {
     ident: syn::Ident,
     vis: syn::Visibility,
@@ -12,9 +12,11 @@ pub struct EnumStructOpts {
 }
 
 #[derive(FromField)]
+#[darling(attributes(enum_field))]
 struct EnumFieldOpts {
     ident: Option<syn::Ident>,
     ty: syn::Type,
+    skip: Option<()>,
 }
 
 impl EnumStructOpts {
@@ -29,7 +31,14 @@ impl EnumStructOpts {
             proc_macro2::Span::call_site(),
         );
 
-        let fields = self.data.take_struct().unwrap().fields;
+        let fields: Vec<_> = self
+            .data
+            .take_struct()
+            .unwrap()
+            .fields
+            .into_iter()
+            .filter(|field| field.skip.is_none())
+            .collect();
 
         let common_type = {
             let mut fields = fields.iter();

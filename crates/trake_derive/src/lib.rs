@@ -9,7 +9,7 @@ pub fn texture_atlas(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream
     input.generate().into()
 }
 
-#[proc_macro_derive(EnumField)]
+#[proc_macro_derive(EnumField, attributes(enum_field))]
 pub fn enum_field(tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input: syn::DeriveInput = syn::parse_macro_input!(tokens);
     match enum_field::EnumStructOpts::from_derive_input(&input) {

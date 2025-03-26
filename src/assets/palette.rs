@@ -1,24 +1,21 @@
 use super::*;
 
-use crate::prelude::Color;
+use crate::{model::ResourceKind, prelude::Color};
 
 #[derive(
-    trake_derive::EnumField,
-    geng::asset::Load,
-    Debug,
-    Clone,
-    Copy,
-    Serialize,
-    Deserialize,
-    PartialEq,
+    trake_derive::EnumField, geng::asset::Load, Debug, Clone, Serialize, Deserialize, PartialEq,
 )]
 #[load(serde = "toml")]
 pub struct Palette {
+    pub default_color: Color,
     pub background: Color,
     pub locomotive_bottom: Color,
     pub locomotive_top: Color,
     pub wall: Color,
     pub steam: Color,
+
+    #[enum_field(skip)]
+    pub resources: HashMap<ResourceKind, Color>,
 
     pub text_positive: Color,
     pub text_negative: Color,

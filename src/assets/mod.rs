@@ -1,6 +1,7 @@
 mod font;
+mod palette;
 
-pub use self::font::*;
+pub use self::{font::*,palette::*};
 
 use std::path::PathBuf;
 
@@ -9,6 +10,7 @@ use geng_utils::gif::GifFrame;
 
 #[derive(geng::asset::Load)]
 pub struct LoadingAssets {
+    pub palette: Palette,
     #[load(path = "sprites/title.png", options(filter = "ugli::Filter::Nearest"))]
     pub title: ugli::Texture,
     #[load(path = "fonts/default.ttf")]
@@ -44,6 +46,7 @@ pub struct Assets {
     pub atlas: Rc<SpritesAtlas>,
     pub config: crate::model::Config,
     pub controls: crate::game::Controls,
+    pub palette: Palette,
     pub sprites: SpriteAssets,
     pub shaders: ShaderAssets,
     pub fonts: FontAssets,

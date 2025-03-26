@@ -48,12 +48,14 @@ impl GameRender {
         options: &GameRenderOptions,
         framebuffer: &mut ugli::Framebuffer,
     ) {
+        let palette = self.context.assets.palette;
+
         // Wall
         let bounds = model.map_bounds.extend_uniform(r32(0.15));
         self.util.draw_outline(
             &Collider::aabb(bounds),
             0.15,
-            Color::try_from("#ab1f65").unwrap(),
+            palette.wall,
             &model.camera,
             framebuffer,
         );
@@ -104,14 +106,14 @@ impl GameRender {
             self.context.geng.draw2d().draw2d(
                 framebuffer,
                 &model.camera,
-                &draw2d::Quad::new(size, Color::try_from("#ffda45").unwrap())
+                &draw2d::Quad::new(size, palette.locomotive_bottom)
                     .rotate(block.collider.rotation.map(R32::as_f32))
                     .translate(block.collider.position.as_f32()),
             );
             self.context.geng.draw2d().draw2d(
                 framebuffer,
                 &model.camera,
-                &draw2d::Quad::new(size, Color::try_from("#ff8142").unwrap())
+                &draw2d::Quad::new(size, palette.locomotive_top)
                     .rotate(block.collider.rotation.map(R32::as_f32))
                     .translate(block.collider.position.as_f32() + vec2(-0.1, 0.1)),
             );
@@ -148,9 +150,9 @@ impl GameRender {
         let instances: Vec<_> = query!(model.particles, (&kind, &position, &radius, &lifetime))
             .map(|(kind, position, radius, lifetime)| {
                 let color = match kind {
-                    ParticleKind::Steam => Color::try_from("#3d3957aa").unwrap(),
-                    ParticleKind::Wall => Color::try_from("#ab1f65").unwrap(),
-                    ParticleKind::WagonDestroyed => Color::try_from("#ffda45").unwrap(),
+                    ParticleKind::Steam => palette.steam,
+                    ParticleKind::Wall => palette.wall,
+                    ParticleKind::WagonDestroyed => palette.locomotive_bottom,
                     ParticleKind::Collect(resource) => match resource {
                         Resource::Coal => Color::try_from("#ff8142").unwrap(),
                         Resource::Coin => Color::try_from("#ffda45").unwrap(),

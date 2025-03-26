@@ -141,8 +141,10 @@ impl geng::State for GameState {
             self.execute(action);
         }
 
+        let palette = self.context.assets.palette;
+
         self.framebuffer_size = framebuffer.size();
-        let bg_color = Color::try_from("#10273d").unwrap();
+        let bg_color = palette.background;
         ugli::clear(framebuffer, Some(bg_color), None, None);
 
         let pixel_buffer = &mut self.pixel_buffer.active_draw();

@@ -304,7 +304,7 @@ impl Model {
     }
 }
 
-fn spawn_text(text: impl Into<Name>, position: vec2<Coord>) -> FloatingText {
+fn spawn_text(palette: &Palette, text: impl Into<Name>, position: vec2<Coord>) -> FloatingText {
     let mut rng = thread_rng();
     let text = text.into();
 
@@ -317,9 +317,9 @@ fn spawn_text(text: impl Into<Name>, position: vec2<Coord>) -> FloatingText {
         velocity,
         size: r32(0.75),
         color: if text.starts_with('-') {
-            Color::try_from("#ff4f69").unwrap()
+            palette.text_negative
         } else {
-            Color::try_from("#fff7f8").unwrap()
+            palette.text_positive
         },
         lifetime: Bounded::new_max(r32(1.5)),
         text,

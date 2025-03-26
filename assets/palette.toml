@@ -1,0 +1,12 @@
+background = "#2B0F54" # "#FFF7F8"
+locomotive_top = "#FF8142"
+locomotive_bottom = "#FFDA45"
+wall = "#AB1F65"
+steam = "#3D3957AA"
+
+text_positive = "#357985"
+text_negative = "#FF4F69"
+
+dark = "#2B0F54"
+light = "#FFF7F8"
+highlight = "#49E7EC"

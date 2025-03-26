@@ -2,7 +2,7 @@ use super::{geometry::GeometryContext, state::UiState};
 
 use crate::{
     assets::Font,
-    prelude::{Context, Theme},
+    prelude::{Context, Palette},
 };
 
 use geng::prelude::*;
@@ -214,8 +214,9 @@ impl UiContext {
         }
     }
 
-    pub fn theme(&self) -> Theme {
-        self.context.get_options().theme
+    pub fn theme(&self) -> Palette {
+        // self.context.get_options().theme
+        self.context.assets.palette
     }
 
     // TODO: better

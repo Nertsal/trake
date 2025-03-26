@@ -71,7 +71,13 @@ impl Model {
                 let config = config.clone();
                 self.items.insert(Item {
                     position,
-                    resource: Some(ResourceNode { kind, config }),
+                    resource: Some(ResourceNode {
+                        kind,
+                        data: config,
+                        state: ResourceNodeState::Spawning(Bounded::new_zero(
+                            self.config.resource.spawn_time,
+                        )),
+                    }),
                     wall: None,
                 });
             }

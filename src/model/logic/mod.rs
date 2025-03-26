@@ -21,8 +21,29 @@ impl Model {
             }
         }
 
+        self.update_resources(delta_time);
         self.passive_particles(delta_time);
         self.process_particles(delta_time);
+    }
+
+    fn update_resources(&mut self, delta_time: FloatTime) {
+        for resource in query!(self.items, (&mut resource.Get.Some)) {
+            match &mut resource.state {
+                ResourceNodeState::Spawning(time) => {
+                    time.change(delta_time);
+                    if time.is_max() {
+                        resource.state = ResourceNodeState::Idle;
+                    }
+                }
+                ResourceNodeState::Idle => {}
+                ResourceNodeState::Despawning(time) => {
+                    time.change(-delta_time);
+                    if time.is_min() {
+                        resource.state = ResourceNodeState::Idle;
+                    }
+                }
+            }
+        }
     }
 
     fn passive_particles(&mut self, _delta_time: FloatTime) {

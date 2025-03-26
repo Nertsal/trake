@@ -92,7 +92,14 @@ impl GameRender {
             //     framebuffer,
             // );
 
-            let radius = r32(0.2);
+            let t = match resource.state {
+                ResourceNodeState::Idle => r32(1.0),
+                ResourceNodeState::Spawning(time) | ResourceNodeState::Despawning(time) => {
+                    time.get_ratio()
+                }
+            };
+            let t = crate::util::smoothstep(t);
+            let radius = r32(0.2) * t;
             let color = palette
                 .resources
                 .get(&resource.kind)

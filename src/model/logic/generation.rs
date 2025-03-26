@@ -48,7 +48,34 @@ impl Model {
         }
 
         // Spawn items
-        // TODO
+        let select_position = |rng: &mut ThreadRng,
+                               radius: Coord,
+                               items: &StructOf<Arena<Item>>|
+         -> Option<vec2<Coord>> {
+            let area = self.map_bounds.extend_uniform(-radius);
+            for _ in 0..10 {
+                let pos = vec2(
+                    rng.gen_range(area.min.x..=area.max.x),
+                    rng.gen_range(area.min.y..=area.max.y),
+                );
+                if query!(items, (&position)).any(|&other_pos| (pos - other_pos).len() < radius) {
+                    continue;
+                }
+                return Some(pos);
+            }
+            None
+        };
+
+        for (&kind, config) in &self.config.resources {
+            if let Some(position) = select_position(&mut rng, r32(0.5), &self.items) {
+                let config = config.clone();
+                self.items.insert(Item {
+                    position,
+                    resource: Some(ResourceNode { kind, config }),
+                    wall: None,
+                });
+            }
+        }
 
         // Shop
         let upgrades = 2;

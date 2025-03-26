@@ -92,7 +92,7 @@ impl GameRender {
             //     framebuffer,
             // );
 
-            let radius = r32(0.1);
+            let radius = r32(0.2);
             let color = palette
                 .resources
                 .get(&resource.kind)

@@ -27,7 +27,8 @@ impl Model {
     }
 
     fn update_resources(&mut self, delta_time: FloatTime) {
-        for resource in query!(self.items, (&mut resource.Get.Some)) {
+        let mut remove = Vec::new();
+        for (id, resource) in query!(self.items, (id, &mut resource.Get.Some)) {
             match &mut resource.state {
                 ResourceNodeState::Spawning(time) => {
                     time.change(delta_time);
@@ -39,10 +40,13 @@ impl Model {
                 ResourceNodeState::Despawning(time) => {
                     time.change(-delta_time);
                     if time.is_min() {
-                        resource.state = ResourceNodeState::Idle;
+                        remove.push(id);
                     }
                 }
             }
+        }
+        for id in remove {
+            self.items.remove(id);
         }
     }
 
@@ -99,74 +103,103 @@ impl Model {
         }
     }
 
-    fn collect_resources(&mut self, _delta_time: FloatTime) {
-        // TODO
+    fn collect_resources(&mut self, delta_time: FloatTime) {
         let mut rng = thread_rng();
 
-        // let mut collected = Vec::new();
-        // for wagon in &self.train.blocks {
-        //     let grid_pos = self.grid.world_to_grid(wagon.collider.position);
-        //     for (res_id, &res_pos, _res) in
-        //         query!(self.grid_items, (id, &position, &resource.Get.Some))
-        //     {
-        //         if grid_pos == res_pos {
-        //             collected.push(res_id);
-        //         }
-        //     }
-        // }
+        let mut collect_sfx = false;
+        for wagon in &mut self.train.wagons {
+            let Some(collect) = &mut wagon.status.collect else {
+                continue;
+            };
 
-        // if !collected.is_empty() {
-        //     self.add_wagon(TrainBlockKind::Wagon);
-        //     self.context.play_sfx(&self.context.assets.sounds.clop2);
-        // }
-        // for id in collected {
-        //     if let Some(item) = self.grid_items.remove(id) {
-        //         if let Some(res) = item.resource {
-        //             log::debug!("Collected: {:?}", res);
-        //             let position = self.grid.grid_to_world(item.position);
+            'collect: {
+                if let Some(collecting) = &mut collect.collecting {
+                    let Some((&position, resource)) = get!(
+                        self.items,
+                        collecting.resource,
+                        (&position, &mut resource.Get.Some)
+                    ) else {
+                        // Resource no longer exists? stop i guess
+                        collect.collecting = None;
+                        break 'collect;
+                    };
 
-        //             let mut plus_score = 0;
-        //             let mut plus_money = 0;
+                    // Collection particles
+                    let delta = position - wagon.collider.position;
+                    self.particles_queue.push(SpawnParticles {
+                        kind: ParticleKind::WagonDestroyed,
+                        density: r32(2.0),
+                        distribution: ParticleDistribution::Circle {
+                            center: wagon.collider.position,
+                            radius: r32(0.2),
+                        },
+                        velocity: delta / r32(0.4),
+                        lifetime: r32(0.4)..=r32(0.5),
+                        ..default()
+                    });
 
-        //             match res {
-        //                 Resource::PlusCent => {
-        //                     plus_score += self.round_score / 5;
-        //                     plus_money += self.money / 10;
-        //                 }
-        //                 Resource::Coin => {
-        //                     plus_money += rng.gen_range(8..=13);
-        //                 }
-        //                 Resource::GhostFuel => {
-        //                     // TODO
-        //                 }
-        //                 _ => (),
-        //             }
+                    // Advance collection progress
+                    collecting
+                        .completion
+                        .change(resource.data.speed * collect.stats.speed * delta_time);
+                    if collecting.completion.is_max() {
+                        // Collect
+                        collecting.completion.set_ratio(R32::ZERO);
+                        let amount = resource.data.amount.min(resource.data.per_collection);
+                        resource.data.amount -= amount;
+                        if resource.data.amount <= 0 {
+                            resource.state = ResourceNodeState::Despawning(Bounded::new_max(
+                                self.config.resource.spawn_time,
+                            ));
+                        }
+                        collect_sfx = true;
 
-        //             if let Some(config) = self.config.resources.get(&res) {
-        //                 plus_score += config.value;
-        //             }
+                        // TODO: transfer to wagon storage
 
-        //             self.round_score += plus_score;
-        //             self.money += plus_money;
+                        // Particles
+                        self.particles_queue.push(SpawnParticles {
+                            kind: ParticleKind::Collect(resource.kind),
+                            density: r32(10.0),
+                            distribution: ParticleDistribution::Circle {
+                                center: position,
+                                radius: r32(0.3),
+                            },
+                            velocity: vec2(0.0, 1.0).as_r32(),
+                            ..default()
+                        });
+                    }
 
-        //             self.particles_queue.push(SpawnParticles {
-        //                 kind: ParticleKind::Collect(res),
-        //                 density: r32(10.0),
-        //                 distribution: ParticleDistribution::Circle {
-        //                     center: position,
-        //                     radius: r32(0.5),
-        //                 },
-        //                 velocity: vec2(0.0, 1.0).as_r32(),
-        //                 ..default()
-        //             });
+                    // Check that the resource is still in range
+                    if (wagon.collider.position - position).len() > collect.stats.range {
+                        // Out of range - stop collecting
+                        collect.collecting = None;
+                    }
+                }
+            }
 
-        //             if plus_score != 0 {
-        //                 self.floating_texts
-        //                     .insert(spawn_text(format!("{:+}", plus_score), position));
-        //             }
-        //         }
-        //     }
-        // }
+            // Not in an `else` branch because we want to switch resources same frame
+            // when going out of range of the previous one
+            if collect.collecting.is_none() {
+                // Look for resources to collect
+                let in_range = query!(self.items, (id, &position, &resource.Get.Some)).filter(
+                    |(_, &pos, resource)| {
+                        matches!(resource.state, ResourceNodeState::Idle)
+                            && resource.kind == collect.stats.resource
+                            && (wagon.collider.position - pos).len() <= collect.stats.range
+                    },
+                );
+                if let Some((id, _, _)) = in_range.choose(&mut rng) {
+                    collect.collecting = Some(WagonCollecting {
+                        resource: id,
+                        completion: Bounded::new_zero(R32::ONE),
+                    });
+                }
+            }
+        }
+
+        if collect_sfx {
+            self.context.play_sfx(&self.context.assets.sounds.clop2);
+        }
     }
 
     fn collide_train(&mut self, _delta_time: FloatTime) {

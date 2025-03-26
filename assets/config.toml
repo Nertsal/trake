@@ -17,13 +17,13 @@ max_health = 10.0
 size = [0.9, 0.45]
 max_health = 10.0
 [train.starter_wagons.collect]
-resource = "Wood"
+resource = "Food"
 range = 2.5
 speed = 1.0
 capacity = 15
 
 [resource]
-spawn_time = 0.5
+spawn_time = 1.0
 
 [resources.Wood]
 value = 0.5

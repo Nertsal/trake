@@ -75,6 +75,32 @@ impl GameRender {
             );
         }
 
+        // Resource collection indicator
+        for wagon in &model.train.wagons {
+            if let Some(collect) = &wagon.status.collect {
+                if let Some(collecting) = &collect.collecting {
+                    if let Some(&position) = get!(model.items, collecting.resource, (&position)) {
+                        let radius = r32(0.2);
+                        let width = r32(0.1);
+                        let radius = radius + width * r32(2.0);
+
+                        let t = collecting.completion.get_ratio();
+                        let t = crate::util::smoothstep(t);
+
+                        self.util.draw_circle_arc(
+                            framebuffer,
+                            &model.camera,
+                            (mat3::translate(position) * mat3::scale_uniform(radius)).as_f32(),
+                            crate::util::with_alpha(palette.range_circle, 0.5),
+                            0.0,
+                            Angle::from_degrees(90.0 - 360.0 * t.as_f32())
+                                ..=Angle::from_degrees(90.0),
+                        );
+                    }
+                }
+            }
+        }
+
         // Resources
         for (&position, resource) in query!(model.items, (&position, &resource.Get.Some)) {
             // let texture = match resource.kind {

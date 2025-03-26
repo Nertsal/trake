@@ -327,7 +327,7 @@ impl UtilRender {
         }
     }
 
-    fn circle_with_cut(
+    pub fn draw_circle_cut(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &impl geng::AbstractCamera2d,
@@ -335,6 +335,27 @@ impl UtilRender {
         color: Color,
         cut: f32,
     ) {
+        self.draw_circle_arc(
+            framebuffer,
+            camera,
+            transform,
+            color,
+            cut,
+            Angle::from_radians(-std::f32::consts::PI)..=Angle::from_radians(std::f32::consts::PI),
+        );
+    }
+
+    pub fn draw_circle_arc(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &impl geng::AbstractCamera2d,
+        transform: mat3<f32>,
+        color: Color,
+        cut: f32,
+        range: RangeInclusive<Angle>,
+    ) {
+        let arc_min = range.start().as_radians();
+        let arc_max = range.end().as_radians();
         let framebuffer_size = framebuffer.size();
         ugli::draw(
             framebuffer,
@@ -347,6 +368,8 @@ impl UtilRender {
                     u_color: color,
                     u_framebuffer_size: framebuffer_size,
                     u_inner_cut: cut,
+                    u_arc_min: arc_min,
+                    u_arc_max: arc_max,
                 },
                 camera.uniforms(framebuffer_size.map(|x| x as f32)),
             ),
@@ -420,7 +443,7 @@ impl UtilRender {
     ) {
         match collider.shape {
             Shape::Circle { radius } => {
-                self.circle_with_cut(
+                self.draw_circle_cut(
                     framebuffer,
                     camera,
                     mat3::translate(collider.position.as_f32())
@@ -466,7 +489,7 @@ impl UtilRender {
     ) {
         match collider.shape {
             Shape::Circle { radius } => {
-                self.circle_with_cut(
+                self.draw_circle_cut(
                     framebuffer,
                     camera,
                     mat3::translate(collider.position.as_f32())

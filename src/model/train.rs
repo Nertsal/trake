@@ -10,19 +10,48 @@ pub struct Train {
 
 #[derive(Debug, Clone)]
 pub struct Wagon {
-    pub stats: WagonStats,
+    pub status: WagonStatus,
     pub collider: Collider,
 }
 
 impl Wagon {
-    pub fn new(config: &TrainConfig, position: vec2<Coord>, stats: WagonStats) -> Self {
+    pub fn new(position: vec2<Coord>, stats: WagonStats) -> Self {
         Self {
             collider: Collider::aabb(
                 Aabb2::point(position).extend_symmetric(stats.size / r32(2.0)),
             ),
-            stats,
+            status: WagonStatus {
+                size: stats.size,
+                health: Bounded::new_max(stats.max_health),
+                collect: stats.collect.map(|stats| WagonCollectStatus {
+                    stats,
+                    collecting: None,
+                }),
+            },
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct WagonStatus {
+    pub size: vec2<Coord>,
+    pub health: Bounded<Hp>,
+    pub collect: Option<WagonCollectStatus>,
+}
+
+#[derive(Debug, Clone)]
+pub struct WagonCollectStatus {
+    pub stats: WagonCollectStats,
+    pub collecting: Option<WagonCollecting>,
+}
+
+#[derive(Debug, Clone)]
+pub struct WagonCollecting {
+    /// Id of the resource being collected.
+    pub resource: ArenaId,
+    /// A number between 0 and 1.
+    /// When it reaches 1, the resource gets collected.
+    pub completion: Bounded<R32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

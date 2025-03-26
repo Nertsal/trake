@@ -236,25 +236,19 @@ impl Model {
             return;
         };
 
-        let wagon_size = stats.size;
-
         let radius = |block: &Wagon| match block.collider.shape {
             Shape::Circle { radius } => radius,
             Shape::Rectangle { width, .. } => width * r32(0.5),
             Shape::RectangleOutline { width, .. } => width * r32(0.5),
         };
 
-        let space = self.config.train.wagon_spacing + wagon_size.x / r32(2.0) + radius(tail);
+        let space = self.config.train.wagon_spacing + stats.size.x / r32(2.0) + radius(tail);
         let position = tail.collider.position - tail.collider.rotation.unit_vec() * space;
         let rotation = tail.collider.rotation;
-        self.train.wagons.push_back(Wagon {
-            stats,
-            collider: Collider {
-                shape: Shape::rectangle(wagon_size),
-                position,
-                rotation,
-            },
-        });
+
+        let mut wagon = Wagon::new(position, stats);
+        wagon.collider.rotation = rotation;
+        self.train.wagons.push_back(wagon);
     }
 
     fn move_train(&mut self, delta_time: FloatTime, player_input: &PlayerInput) {
@@ -297,7 +291,7 @@ impl Model {
                 density: r32(4.0) * self.train.train_speed.clamp(r32(0.5), r32(5.0)),
                 distribution: ParticleDistribution::Circle {
                     center: head.collider.position
-                        + head.collider.rotation.unit_vec() * head.stats.size.x / r32(2.5),
+                        + head.collider.rotation.unit_vec() * head.status.size.x / r32(2.5),
                     radius: r32(0.1),
                 },
                 size: r32(0.05)..=r32(0.15),

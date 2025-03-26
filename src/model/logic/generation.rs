@@ -35,7 +35,7 @@ impl Model {
             wagons: wagons
                 .next()
                 .into_iter()
-                .map(|stats| Wagon::new(&self.config.train, self.depo.position, stats))
+                .map(|stats| Wagon::new(self.depo.position, stats))
                 .collect(),
         };
         for wagon in wagons {

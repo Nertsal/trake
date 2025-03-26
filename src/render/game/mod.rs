@@ -162,10 +162,10 @@ impl GameRender {
 
         // Range circles
         for wagon in &model.train.wagons {
-            if let Some(collect) = &wagon.stats.collect {
+            if let Some(collect) = &wagon.status.collect {
                 // TODO: seemless circles (without gaps between pixels when drawing thin)
                 self.util.draw_outline(
-                    &Collider::circle(wagon.collider.position, collect.range),
+                    &Collider::circle(wagon.collider.position, collect.stats.range),
                     0.05,
                     palette.range_circle,
                     &model.camera,

@@ -26,7 +26,7 @@ impl Model {
     }
 
     fn passive_particles(&mut self, _delta_time: FloatTime) {
-        for wall in query!(self.grid_items, (&wall.Get.Some)) {
+        for wall in query!(self.items, (&wall.Get.Some)) {
             if wall.collider.check(&self.depo) {
                 continue;
             }
@@ -163,10 +163,20 @@ impl Model {
         self.train.in_depo = false;
 
         let mut collision = false;
-        for wall in query!(self.grid_items, (&wall.Get.Some)) {
-            if head.collider.check(&wall.collider) {
-                collision = true;
-                break;
+
+        // Bounds
+        let bounds = Collider::aabb_outline(self.map_bounds);
+        if head.collider.check(&bounds) {
+            collision = true;
+        }
+
+        // Walls
+        if !collision {
+            for wall in query!(self.items, (&wall.Get.Some)) {
+                if head.collider.check(&wall.collider) {
+                    collision = true;
+                    break;
+                }
             }
         }
 
@@ -213,6 +223,7 @@ impl Model {
         let radius = |block: &TrainBlock| match block.collider.shape {
             Shape::Circle { radius } => radius,
             Shape::Rectangle { width, .. } => width * r32(0.5),
+            Shape::RectangleOutline { width, .. } => width * r32(0.5),
         };
 
         let space = self.config.train.wagon_spacing + wagon_size.x + radius(tail);
@@ -252,6 +263,7 @@ impl Model {
             let radius = |block: &TrainBlock| match block.collider.shape {
                 Shape::Circle { radius } => radius,
                 Shape::Rectangle { width, .. } => width * r32(0.5),
+                Shape::RectangleOutline { width, .. } => width * r32(0.5),
             };
 
             let space = self.config.train.wagon_spacing + radius(wagon);

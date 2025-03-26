@@ -6,7 +6,7 @@ impl Model {
         self.camera.center = self.map_bounds.center().as_f32();
 
         // Walls
-        self.grid_items = default();
+        self.items = default();
 
         self.next_round();
     }
@@ -39,12 +39,12 @@ impl Model {
         };
 
         // Cleanup
-        let ids: Vec<_> = query!(self.grid_items, (id, &wall))
+        let ids: Vec<_> = query!(self.items, (id, &wall))
             .filter(|(_, wall)| wall.is_none())
             .map(|(id, _)| id)
             .collect();
         for id in ids {
-            self.grid_items.remove(id);
+            self.items.remove(id);
         }
 
         // Spawn items

@@ -440,6 +440,19 @@ impl UtilRender {
                     (mat3::translate(collider.position) * mat3::rotate(collider.rotation)).as_f32(),
                 );
             }
+            Shape::RectangleOutline { width, height } => {
+                self.draw_outline(
+                    &Collider {
+                        position: collider.position,
+                        rotation: collider.rotation,
+                        shape: Shape::Rectangle { width, height },
+                    },
+                    0.1,
+                    color,
+                    camera,
+                    framebuffer,
+                );
+            }
         }
     }
 
@@ -462,7 +475,7 @@ impl UtilRender {
                     (radius.as_f32() - outline_width) / radius.as_f32(),
                 );
             }
-            Shape::Rectangle { width, height } => {
+            Shape::Rectangle { width, height } | Shape::RectangleOutline { width, height } => {
                 let [a, b, c, d] = Aabb2::ZERO
                     .extend_symmetric(vec2(width.as_f32(), height.as_f32()) / 2.0)
                     .extend_uniform(-outline_width / 2.0)

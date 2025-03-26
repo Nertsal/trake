@@ -76,7 +76,7 @@ impl GameRender {
         }
 
         // Resources
-        for (&position, resource) in query!(model.grid_items, (&position, &resource.Get.Some)) {
+        for (&position, resource) in query!(model.items, (&position, &resource.Get.Some)) {
             let texture = match resource {
                 Resource::Coal => &self.context.assets.sprites.coal,
                 Resource::Coin => &self.context.assets.sprites.coin,
@@ -99,7 +99,7 @@ impl GameRender {
         for block in &model.train.blocks {
             let size = match block.collider.shape {
                 Shape::Circle { .. } => todo!(),
-                Shape::Rectangle { width, height } => {
+                Shape::Rectangle { width, height } | Shape::RectangleOutline { width, height } => {
                     Aabb2::ZERO.extend_symmetric(vec2(width, height).as_f32() / 2.0)
                 }
             };

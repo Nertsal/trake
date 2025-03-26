@@ -71,6 +71,10 @@ impl Collider {
         Self::new(aabb.center(), Shape::rectangle(aabb.size()))
     }
 
+    pub fn aabb_outline(aabb: Aabb2<Coord>) -> Self {
+        Self::new(aabb.center(), Shape::rectangle_outline(aabb.size()))
+    }
+
     pub fn transform_mat(&self) -> mat3<Coord> {
         mat3::translate(self.position) * mat3::rotate(self.rotation)
     }

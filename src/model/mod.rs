@@ -151,7 +151,7 @@ pub struct Model {
     pub depo: Collider,
     pub shop: Vec<ShopItem>,
 
-    pub grid_items: StructOf<Arena<Item>>,
+    pub items: StructOf<Arena<Item>>,
     pub particles_queue: Vec<SpawnParticles>,
     pub particles: StructOf<Arena<Particle>>,
     pub floating_texts: StructOf<Arena<FloatingText>>,
@@ -185,7 +185,7 @@ impl Model {
             depo: Collider::aabb(Aabb2::ZERO),
             shop: Vec::new(),
 
-            grid_items: default(),
+            items: default(),
             particles_queue: Vec::new(),
             particles: default(),
             floating_texts: default(),

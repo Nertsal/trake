@@ -32,6 +32,7 @@ impl Model {
             in_depo: true,
             target_speed: r32(0.0),
             train_speed: r32(0.0),
+            fuel: Fuel::ZERO,
             wagons: wagons
                 .next()
                 .into_iter()
@@ -41,6 +42,7 @@ impl Model {
         for wagon in wagons {
             self.add_wagon(wagon);
         }
+        self.train.fuel = self.train.fuel_capacity();
 
         // Cleanup
         let ids: Vec<_> = query!(self.items, (id, &wall))

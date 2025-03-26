@@ -6,6 +6,7 @@ pub type Money = i64;
 pub type MoneyFraction = R32;
 pub type ResourceCount = i64;
 pub type Hp = R32;
+pub type Fuel = R32;
 
 #[derive(Debug, Clone)]
 pub struct PlayerInput {

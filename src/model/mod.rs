@@ -59,6 +59,7 @@ impl Model {
                 target_speed: r32(0.0),
                 train_speed: r32(0.0),
                 wagons: vec![].into(),
+                fuel: Fuel::ZERO,
             },
             depo: Collider::aabb(Aabb2::ZERO),
             shop: Vec::new(),

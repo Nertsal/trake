@@ -21,6 +21,7 @@ pub struct TrainConfig {
     pub speed: Coord,
     pub acceleration: Coord,
     pub deceleration: Coord,
+    pub fuel_consumption: Fuel,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

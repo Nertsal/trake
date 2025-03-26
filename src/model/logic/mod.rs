@@ -341,17 +341,26 @@ impl Model {
         }
 
         // Acceleration
-        self.train.target_speed = self.config.train.speed;
+        self.train.target_speed = if self.train.fuel > Fuel::ZERO {
+            self.config.train.speed
+        } else {
+            Coord::ZERO
+        };
         let target = self.train.target_speed;
         let current_speed = self.train.train_speed;
         let acceleration = if target > current_speed {
             self.config.train.acceleration
         } else {
-            -self.config.train.deceleration
+            self.config.train.deceleration
         };
         self.train.train_speed =
-            current_speed + (acceleration * delta_time).clamp_abs((target - current_speed).abs());
+            current_speed + (target - current_speed).clamp_abs(acceleration * delta_time);
 
+        // Spend fuel
+        self.train.fuel = (self.train.fuel - self.config.train.fuel_consumption * delta_time)
+            .clamp(Fuel::ZERO, self.train.fuel_capacity());
+
+        // If the train stops, the round ends
         if self.train.train_speed == Coord::ZERO {
             self.next_round();
         }

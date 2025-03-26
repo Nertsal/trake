@@ -65,6 +65,15 @@ impl GameUi {
             if launch.text.state.clicked {
                 actions.push(GameAction::LaunchTrain);
             }
+
+            let pos = left_bar
+                .cut_top(font_size * 1.2)
+                .with_width(font_size * 4.0, 0.5);
+            let text = context
+                .state
+                .get_root_or(|| TextWidget::new("Fuel").aligned(vec2(0.5, 0.5)));
+            text.update(pos, context);
+            text.text = format!("Fuel: {:.1}", model.train.fuel).into();
         }
 
         // Shop

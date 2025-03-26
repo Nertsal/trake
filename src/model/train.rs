@@ -5,6 +5,7 @@ pub struct Train {
     pub in_depo: bool,
     pub target_speed: Coord,
     pub train_speed: Coord,
+    pub fuel: Fuel,
     pub wagons: VecDeque<Wagon>,
 }
 
@@ -23,6 +24,7 @@ impl Wagon {
             status: WagonStatus {
                 size: stats.size,
                 health: Bounded::new_max(stats.max_health),
+                fuel_capacity: stats.fuel_capacity,
                 collect: stats.collect.map(|stats| WagonCollectStatus {
                     stats,
                     collecting: None,
@@ -32,10 +34,21 @@ impl Wagon {
     }
 }
 
+impl Train {
+    pub fn fuel_capacity(&self) -> Fuel {
+        r32(self
+            .wagons
+            .iter()
+            .map(|wagon| wagon.status.fuel_capacity.as_f32())
+            .sum())
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct WagonStatus {
     pub size: vec2<Coord>,
     pub health: Bounded<Hp>,
+    pub fuel_capacity: Fuel,
     pub collect: Option<WagonCollectStatus>,
 }
 
@@ -58,6 +71,7 @@ pub struct WagonCollecting {
 pub struct WagonStats {
     pub size: vec2<Coord>,
     pub max_health: Hp,
+    pub fuel_capacity: Fuel,
     pub collect: Option<WagonCollectStats>,
 }
 

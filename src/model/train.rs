@@ -29,6 +29,7 @@ impl Wagon {
                 collect: stats.collect.map(|stats| WagonCollectStatus {
                     stats,
                     collecting: None,
+                    storage: HashMap::new(),
                 }),
             },
         }
@@ -57,6 +58,14 @@ pub struct WagonStatus {
 pub struct WagonCollectStatus {
     pub stats: WagonCollectStats,
     pub collecting: Option<WagonCollecting>,
+    pub storage: HashMap<ResourceKind, ResourceCount>,
+}
+
+impl WagonCollectStatus {
+    /// The total amount of stored resources.
+    pub fn total_stored(&self) -> ResourceCount {
+        self.storage.values().copied().sum()
+    }
 }
 
 #[derive(Debug, Clone)]

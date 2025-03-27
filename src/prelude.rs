@@ -1,7 +1,6 @@
 pub use crate::{assets::*, context::*};
 
 pub use anyhow::Result;
-pub use associated_list::AssocList;
 pub use geng::prelude::*;
 pub use geng_utils::{bounded::Bounded, conversions::*};
 pub use itertools::*;

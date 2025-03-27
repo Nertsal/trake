@@ -238,6 +238,13 @@ impl Model {
                 continue;
             };
 
+            let wagon_collected = collect.total_stored();
+            if wagon_collected >= collect.stats.capacity {
+                // Cannot collect anymore resources
+                collect.collecting = None;
+                continue;
+            }
+
             'collect: {
                 if let Some(collecting) = &mut collect.collecting {
                     let Some((&position, resource)) = get!(
@@ -271,7 +278,11 @@ impl Model {
                     if collecting.completion.is_max() {
                         // Collect
                         collecting.completion.set_ratio(R32::ZERO);
-                        let amount = resource.data.amount.min(resource.data.per_collection);
+                        let amount = resource
+                            .data
+                            .amount
+                            .min(resource.data.per_collection)
+                            .min(collect.stats.capacity - wagon_collected);
                         resource.data.amount -= amount;
                         if resource.data.amount <= 0 {
                             resource.state = ResourceNodeState::Despawning(Bounded::new_max(
@@ -281,7 +292,8 @@ impl Model {
                         collect_sfx = true;
                         collect.collecting = None; // Search again in case there is another one closer
 
-                        // TODO: transfer to wagon storage
+                        // Transfer to wagon storage
+                        *collect.storage.entry(resource.kind).or_default() += amount;
 
                         // Particles
                         self.particles_queue.push(SpawnParticles {

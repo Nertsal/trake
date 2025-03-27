@@ -20,7 +20,6 @@ pub struct Model {
     pub round_time: FloatTime,
 
     pub money: Money,
-    pub resources: AssocList<ResourceKind, ResourceCount>,
 
     pub phase: Phase,
     pub deck: Deck,
@@ -49,7 +48,6 @@ impl Model {
             round_time: FloatTime::ZERO,
 
             money: 0,
-            resources: AssocList::new(),
 
             phase: Phase::Setup,
             deck: Deck {

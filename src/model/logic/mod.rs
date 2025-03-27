@@ -89,13 +89,23 @@ impl Model {
             if let Some(Team::Enemy) = team {
                 // Collide with train
                 for wagon in &mut self.train.wagons {
-                    if wagon.collider.check(collider) {
+                    if let Some(collision) = wagon.collider.collide(collider) {
                         if let &Some(damage) = collision_damage {
                             wagon.status.health.change(-damage);
                         }
                         if let Some(health) = health {
                             health.change(-self.train.head_damage);
                         }
+                        self.particles_queue.push(SpawnParticles {
+                            kind: ParticleKind::WagonDamaged,
+                            density: r32(10.0),
+                            distribution: ParticleDistribution::Circle {
+                                center: collision.point,
+                                radius: r32(0.2),
+                            },
+                            velocity: vec2(0.0, 1.0).as_r32(),
+                            ..default()
+                        });
                         break;
                     }
                 }

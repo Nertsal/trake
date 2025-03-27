@@ -34,6 +34,7 @@ pub enum ParticleKind {
     Steam,
     Wall,
     WagonDestroyed,
+    WagonDamaged,
     Collect(ResourceKind),
 }
 

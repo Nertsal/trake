@@ -223,6 +223,7 @@ impl GameRender {
                     ParticleKind::Steam => palette.steam,
                     ParticleKind::Wall => palette.wall,
                     ParticleKind::WagonDestroyed => palette.wagon_bottom,
+                    ParticleKind::WagonDamaged => palette.team_enemy,
                     ParticleKind::Collect(resource) => palette
                         .resources
                         .get(resource)

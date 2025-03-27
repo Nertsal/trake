@@ -141,27 +141,48 @@ impl GameRender {
         }
 
         // Train
-        for block in &model.train.wagons {
-            let size = match block.collider.shape {
+        for wagon in &model.train.wagons {
+            let size = match wagon.collider.shape {
                 Shape::Circle { .. } => todo!(),
                 Shape::Rectangle { width, height } | Shape::RectangleOutline { width, height } => {
                     Aabb2::ZERO.extend_symmetric(vec2(width, height).as_f32() / 2.0)
                 }
             };
+
+            let offset = vec2(-0.1, 0.1);
             self.context.geng.draw2d().draw2d(
                 framebuffer,
                 &model.camera,
                 &draw2d::Quad::new(size, palette.wagon_bottom)
-                    .rotate(block.collider.rotation.map(R32::as_f32))
-                    .translate(block.collider.position.as_f32()),
+                    .rotate(wagon.collider.rotation.map(R32::as_f32))
+                    .translate(wagon.collider.position.as_f32()),
             );
+
             self.context.geng.draw2d().draw2d(
                 framebuffer,
                 &model.camera,
                 &draw2d::Quad::new(size, palette.wagon_top)
-                    .rotate(block.collider.rotation.map(R32::as_f32))
-                    .translate(block.collider.position.as_f32() + vec2(-0.1, 0.1)),
+                    .rotate(wagon.collider.rotation.map(R32::as_f32))
+                    .translate(wagon.collider.position.as_f32() + offset),
             );
+
+            if let Some(collect) = &wagon.status.collect {
+                let color = palette
+                    .resources
+                    .get(&collect.stats.resource)
+                    .copied()
+                    .unwrap_or(palette.default_color);
+                let collect_t = collect.total_stored() as f32 / collect.stats.capacity as f32;
+                self.context.geng.draw2d().draw2d(
+                    framebuffer,
+                    &model.camera,
+                    &draw2d::Quad::new(size, color)
+                        .scale_uniform(collect_t * 0.9)
+                        .rotate(wagon.collider.rotation.map(R32::as_f32))
+                        .translate(-offset * (1.0 - collect_t))
+                        .translate(wagon.collider.position.as_f32() + offset),
+                );
+            }
 
             // let draw =
             //     geng_utils::texture::DrawTexture::new(&self.context.assets.sprites.locomotive)
@@ -177,7 +198,7 @@ impl GameRender {
 
             if options.show_colliders {
                 self.util.draw_outline(
-                    &block.collider,
+                    &wagon.collider,
                     OUTLINE_WIDTH,
                     Color::GREEN,
                     &model.camera,

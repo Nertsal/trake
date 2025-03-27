@@ -33,6 +33,7 @@ impl Model {
             target_speed: r32(0.0),
             train_speed: r32(0.0),
             fuel: Fuel::ZERO,
+            head_damage: self.config.train.head_damage,
             wagons: wagons
                 .next()
                 .into_iter()
@@ -54,7 +55,6 @@ impl Model {
         }
 
         // Spawn items
-
         for (&kind, config) in &self.config.resources {
             if let Some(position) =
                 select_position(&mut rng, self.map_bounds, r32(0.5), &self.items)
@@ -70,6 +70,28 @@ impl Model {
                         )),
                     }),
                     wall: None,
+                });
+            }
+        }
+
+        // Spawn enemies
+        for _ in 0..2 {
+            if let Some(position) =
+                select_position(&mut rng, self.map_bounds, r32(1.0), &self.items)
+            {
+                self.entities.insert(Entity {
+                    collider: Collider::circle(position, r32(0.3)),
+                    velocity: vec2::ZERO,
+                    health: Some(Bounded::new_max(r32(10.0))),
+                    team: Some(Team::Enemy),
+                    damage_on_collision: None,
+                    ai: Some(EntityAi::Shooter(ShooterAi {
+                        range: r32(2.0),
+                        shooting_speed: r32(0.5),
+                        cooldown: Bounded::new_max(R32::ONE),
+                        bullet_speed: r32(5.0),
+                        bullet_damage: r32(4.0),
+                    })),
                 });
             }
         }

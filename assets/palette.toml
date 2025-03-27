@@ -6,6 +6,10 @@ range_circle = "#FFF7F8"
 wall = "#AB1F65"
 steam = "#3D3957AA"
 
+team_player = "#FF00FF"
+team_enemy = "#FF4F69"
+team_neutral = "#FF00FF"
+
 text_positive = "#357985"
 text_negative = "#FF4F69"
 

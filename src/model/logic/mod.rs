@@ -21,9 +21,104 @@ impl Model {
             }
         }
 
+        self.update_entities(delta_time);
+        self.update_train(delta_time);
         self.update_resources(delta_time);
         self.passive_particles(delta_time);
         self.process_particles(delta_time);
+    }
+
+    fn update_entities(&mut self, delta_time: FloatTime) {
+        let mut rng = thread_rng();
+
+        // Ai/Control
+        let mut spawns = Vec::new();
+        for (collider, ai, team) in query!(self.entities, (&collider, &mut ai.Get.Some, &team)) {
+            match ai {
+                EntityAi::Shooter(ai) => {
+                    // Update cooldown
+                    ai.cooldown.change(-ai.shooting_speed * delta_time);
+                    if ai.cooldown.is_above_min() {
+                        continue;
+                    }
+
+                    // Find a target
+                    let target = match team {
+                        Some(Team::Enemy) => self
+                            .train
+                            .wagons
+                            .iter()
+                            .find(|wagon| {
+                                (collider.position - wagon.collider.position).len() <= ai.range
+                            })
+                            .map(|wagon| wagon.collider.position),
+                        Some(Team::Player) => None,
+                        None => None,
+                    };
+                    if let Some(target) = target {
+                        ai.cooldown.set_ratio(R32::ONE);
+                        spawns.push(Entity {
+                            collider: Collider::circle(collider.position, r32(0.2)),
+                            velocity: (target - collider.position).normalize_or_zero()
+                                * ai.bullet_speed,
+                            health: Some(Bounded::new_max(r32(0.1))),
+                            team: *team,
+                            damage_on_collision: Some(ai.bullet_damage),
+                            ai: None,
+                        });
+                    }
+                }
+            }
+        }
+
+        // Spawn
+        for spawn in spawns {
+            self.entities.insert(spawn);
+        }
+
+        // Movement
+        for (collider, &velocity) in query!(self.entities, (&mut collider, &velocity)) {
+            collider.position += velocity * delta_time;
+        }
+
+        // Collisions
+        for (team, collider, health, collision_damage) in query!(
+            self.entities,
+            (&team, &collider, &mut health, &damage_on_collision)
+        ) {
+            if let Some(Team::Enemy) = team {
+                // Collide with train
+                for wagon in &mut self.train.wagons {
+                    if wagon.collider.check(collider) {
+                        if let &Some(damage) = collision_damage {
+                            wagon.status.health.change(-damage);
+                        }
+                        if let Some(health) = health {
+                            health.change(-self.train.head_damage);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Check health
+        let mut remove = Vec::new();
+        for (id, health) in query!(self.entities, (id, &health.Get.Some)) {
+            if health.is_min() {
+                remove.push(id);
+            }
+        }
+        for id in remove {
+            self.entities.remove(id);
+        }
+    }
+
+    fn update_train(&mut self, _delta_time: FloatTime) {
+        // Remove dead eagons
+        self.train
+            .wagons
+            .retain(|wagon| wagon.status.health.is_above_min());
     }
 
     fn update_resources(&mut self, delta_time: FloatTime) {

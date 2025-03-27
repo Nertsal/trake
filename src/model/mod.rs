@@ -24,11 +24,12 @@ pub struct Model {
 
     pub phase: Phase,
     pub deck: Deck,
-    pub train: Train,
-    pub depo: Collider,
     pub shop: Vec<ShopItem>,
 
+    pub train: Train,
+    pub depo: Collider,
     pub items: StructOf<Arena<Item>>,
+    pub entities: StructOf<Arena<Entity>>,
     pub particles_queue: Vec<SpawnParticles>,
     pub particles: StructOf<Arena<Particle>>,
     pub floating_texts: StructOf<Arena<FloatingText>>,
@@ -54,17 +55,19 @@ impl Model {
             deck: Deck {
                 wagons: config.train.starter_wagons.clone(),
             },
+            shop: Vec::new(),
+
             train: Train {
                 in_depo: false,
                 target_speed: r32(0.0),
                 train_speed: r32(0.0),
+                head_damage: config.train.head_damage,
                 wagons: vec![].into(),
                 fuel: Fuel::ZERO,
             },
             depo: Collider::aabb(Aabb2::ZERO),
-            shop: Vec::new(),
-
             items: default(),
+            entities: default(),
             particles_queue: Vec::new(),
             particles: default(),
             floating_texts: default(),

@@ -5,6 +5,7 @@ pub struct Train {
     pub in_depo: bool,
     pub target_speed: Coord,
     pub train_speed: Coord,
+    pub head_damage: Hp,
     pub fuel: Fuel,
     pub wagons: VecDeque<Wagon>,
 }

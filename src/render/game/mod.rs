@@ -186,7 +186,18 @@ impl GameRender {
             }
         }
 
-        // Range circles
+        // Entities
+        for (team, collider) in query!(model.entities, (&team, &collider)) {
+            let color = match team {
+                Some(Team::Player) => palette.team_player,
+                Some(Team::Enemy) => palette.team_enemy,
+                None => palette.team_neutral,
+            };
+            self.util
+                .draw_collider(collider, color, &model.camera, framebuffer)
+        }
+
+        // Wagon range circles
         for wagon in &model.train.wagons {
             if let Some(collect) = &wagon.status.collect {
                 // TODO: seemless circles (without gaps between pixels when drawing thin)

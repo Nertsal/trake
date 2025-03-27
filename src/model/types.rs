@@ -46,6 +46,40 @@ pub struct Wall {
     pub collider: Collider,
 }
 
+#[derive(Debug, Clone)]
+pub enum EntityAi {
+    Shooter(ShooterAi),
+}
+
+#[derive(Debug, Clone)]
+pub struct ShooterAi {
+    /// How far away can the entity target enemies.
+    pub range: Coord,
+    /// How many times per second can this entity shoot.
+    pub shooting_speed: R32,
+    /// Value in range `0.0..=1.0`.
+    /// When it reaches `0.0` the entity can shoot again.
+    pub cooldown: Bounded<R32>,
+    pub bullet_speed: Coord,
+    pub bullet_damage: Hp,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Team {
+    Player,
+    Enemy,
+}
+
+#[derive(SplitFields, Debug, Clone)]
+pub struct Entity {
+    pub collider: Collider,
+    pub velocity: vec2<Coord>,
+    pub health: Option<Bounded<Hp>>,
+    pub team: Option<Team>,
+    pub damage_on_collision: Option<Hp>,
+    pub ai: Option<EntityAi>,
+}
+
 #[derive(SplitFields, Debug, Clone)]
 pub struct Item {
     pub position: vec2<Coord>,

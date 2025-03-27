@@ -15,6 +15,10 @@ pub struct Palette {
     pub wall: Color,
     pub steam: Color,
 
+    pub team_player: Color,
+    pub team_enemy: Color,
+    pub team_neutral: Color,
+
     #[enum_field(skip)]
     pub resources: HashMap<ResourceKind, Color>,
 

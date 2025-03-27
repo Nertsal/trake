@@ -446,19 +446,22 @@ impl Model {
         // Move wagons
         let mut blocks = self.train.wagons.iter_mut();
         if let Some(mut head) = blocks.next() {
-            self.particles_queue.push(SpawnParticles {
-                kind: ParticleKind::Steam,
-                density: r32(4.0) * self.train.train_speed.clamp(r32(0.5), r32(5.0)),
-                distribution: ParticleDistribution::Circle {
-                    center: head.collider.position
-                        + head.collider.rotation.unit_vec() * head.status.size.x / r32(2.5),
-                    radius: r32(0.1),
-                },
-                size: r32(0.05)..=r32(0.15),
-                velocity: -head.collider.rotation.unit_vec()
-                    * (self.train.train_speed * r32(0.5)).clamp(r32(0.1), r32(0.5)),
-                ..default()
-            });
+            if self.train.fuel > Fuel::ZERO {
+                self.particles_queue.push(SpawnParticles {
+                    kind: ParticleKind::Steam,
+                    density: r32(4.0) * self.train.fuel.clamp(r32(0.5), r32(5.0)),
+                    distribution: ParticleDistribution::Circle {
+                        center: head.collider.position
+                            + head.collider.rotation.unit_vec() * head.status.size.x / r32(2.5),
+                        radius: r32(0.1),
+                    },
+                    size: r32(0.05)..=r32(0.15),
+                    velocity: -head.collider.rotation.unit_vec()
+                        * (self.train.train_speed * r32(0.5)).clamp(r32(0.1), r32(0.5))
+                        + vec2(0.0, 0.5).as_r32(),
+                    ..default()
+                });
+            }
             move_head(head, player_input);
 
             for block in blocks {

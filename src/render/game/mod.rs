@@ -207,6 +207,19 @@ impl GameRender {
             }
         }
 
+        if let Phase::Finished | Phase::Leaving { .. } = model.phase {
+            // Tunnels
+            for tunnel in &model.tunnels {
+                self.util.draw_outline(
+                    &tunnel.collider,
+                    0.1,
+                    palette.light,
+                    &model.camera,
+                    framebuffer,
+                );
+            }
+        }
+
         // Entities
         for (team, collider) in query!(model.entities, (&team, &collider)) {
             let color = match team {

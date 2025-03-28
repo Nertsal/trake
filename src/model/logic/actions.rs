@@ -25,13 +25,25 @@ impl Model {
     }
 
     pub fn launch_train(&mut self) {
-        let Phase::Setup = self.phase else { return };
+        let Phase::Starting = self.phase else { return };
 
         let speed = self.config.train.speed;
         self.train.target_speed = speed;
         self.train.train_speed = speed;
 
-        self.phase = Phase::Resolution;
+        self.phase = Phase::Action;
         self.context.play_sfx(&self.context.assets.sounds.choochoo);
+    }
+
+    pub fn choose_tunnel(&mut self, tunnel: usize) {
+        let Phase::Finished = self.phase else { return };
+
+        let Some(tunnel) = self.tunnels.get(tunnel) else {
+            return;
+        };
+
+        // TODO: drive into the tunnel
+        // self.phase = Phase::Leaving { tunnel };
+        self.next_map(tunnel.clone());
     }
 }

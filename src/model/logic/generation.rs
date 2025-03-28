@@ -8,11 +8,11 @@ impl Model {
         // Walls
         self.items = default();
 
-        self.next_round();
+        self.generate_map();
     }
 
-    pub fn next_round(&mut self) {
-        log::debug!("Round ended");
+    pub fn generate_map(&mut self) {
+        log::debug!("Generating the map...");
         self.round_time = FloatTime::ZERO;
         let mut rng = thread_rng();
 
@@ -45,14 +45,32 @@ impl Model {
         }
         self.train.fuel = self.train.fuel_capacity();
 
-        // Cleanup
-        let ids: Vec<_> = query!(self.items, (id, &wall))
-            .filter(|(_, wall)| wall.is_none())
-            .map(|(id, _)| id)
+        // Tunnels
+        let tunnels = [Tunnel {
+            collider: Collider::circle(vec2::ZERO, Coord::ZERO),
+        }];
+        let n = tunnels.len();
+        self.tunnels = tunnels
+            .into_iter()
+            .enumerate()
+            .map(|(i, tunnel)| {
+                let t = (i as f32 + 1.0) / (n as f32 + 1.0);
+                let position = self.map_bounds.align_pos(vec2(t, 1.0).as_r32());
+                let size = vec2(2.0, 4.0).as_r32();
+                Tunnel {
+                    collider: Collider::aabb(
+                        Aabb2::point(position)
+                            .extend_symmetric(vec2(size.x, Coord::ZERO) / r32(2.0))
+                            .extend_up(size.y),
+                    ),
+                    ..tunnel
+                }
+            })
             .collect();
-        for id in ids {
-            self.items.remove(id);
-        }
+
+        // Cleanup
+        self.items = default();
+        self.entities = default();
 
         // Spawn items
         for (&kind, config) in &self.config.resources {
@@ -121,7 +139,7 @@ impl Model {
             })
             .collect();
 
-        self.phase = Phase::Setup;
+        self.phase = Phase::Starting;
     }
 }
 

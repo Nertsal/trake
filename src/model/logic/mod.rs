@@ -12,12 +12,16 @@ impl Model {
             .set_volume(self.train.train_speed.as_f32().clamp(0.0, 1.0));
 
         match self.phase {
-            Phase::Setup => {}
-            Phase::Resolution => {
+            Phase::Starting => {}
+            Phase::Action => {
                 self.round_time += delta_time;
                 self.move_train(delta_time, &player_input);
                 self.collect_resources(delta_time);
                 self.collide_train(delta_time);
+            }
+            Phase::Finished => {}
+            Phase::Leaving { tunnel } => {
+                self.check_tunnel(tunnel, delta_time);
             }
         }
 
@@ -26,6 +30,38 @@ impl Model {
         self.update_resources(delta_time);
         self.passive_particles(delta_time);
         self.process_particles(delta_time);
+    }
+
+    fn game_over(&mut self) {
+        todo!("you failed");
+    }
+
+    fn end_action(&mut self) {
+        let Phase::Action = self.phase else { return };
+
+        if self.train.wagons.is_empty() {
+            self.game_over();
+            return;
+        }
+
+        self.phase = Phase::Finished;
+    }
+
+    fn next_map(&mut self, tunnel: Tunnel) {
+        // TODO: effects
+        self.generate_map();
+    }
+
+    fn check_tunnel(&mut self, tunnel: usize, _delta_time: FloatTime) {
+        let Some(tunnel) = self.tunnels.get(tunnel) else {
+            return;
+        };
+
+        if let Some(wagon) = self.train.wagons.front() {
+            if wagon.collider.check(&tunnel.collider) {
+                self.next_map(tunnel.clone());
+            }
+        }
     }
 
     fn update_entities(&mut self, delta_time: FloatTime) {
@@ -101,7 +137,7 @@ impl Model {
                             density: r32(10.0),
                             distribution: ParticleDistribution::Circle {
                                 center: collision.point,
-                                radius: r32(0.2),
+                                radius: r32(0.4),
                             },
                             velocity: vec2(0.0, 1.0).as_r32(),
                             ..default()
@@ -349,7 +385,8 @@ impl Model {
         if head.collider.check(&self.depo) {
             // Ignore wall collisions, go to depo
             if !self.train.in_depo {
-                self.next_round();
+                // TODO: idk
+                self.generate_map();
             }
             return;
         }
@@ -425,7 +462,7 @@ impl Model {
 
     fn move_train(&mut self, delta_time: FloatTime, player_input: &PlayerInput) {
         if self.train.wagons.is_empty() {
-            self.next_round();
+            self.end_action();
             return;
         }
 
@@ -504,7 +541,7 @@ impl Model {
 
         // If the train stops, the round ends
         if self.train.train_speed == Coord::ZERO {
-            self.next_round();
+            self.end_action();
         }
     }
 }

@@ -89,8 +89,10 @@ pub struct Item {
 
 #[derive(Debug, Clone)]
 pub enum Phase {
-    Setup,
-    Resolution,
+    Starting,
+    Action,
+    Finished,
+    Leaving { tunnel: usize },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -110,4 +112,11 @@ pub struct ShopItem {
     pub upgrade: Upgrade,
     pub price: Money,
     pub can_purchase: bool,
+}
+
+#[derive(Debug, Clone)]
+pub struct Tunnel {
+    pub collider: Collider,
+    // TODO
+    // pub effects: Vec<TunnelEffect>,
 }

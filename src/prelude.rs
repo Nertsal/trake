@@ -1,4 +1,4 @@
-pub use crate::{assets::*, context::*};
+pub use crate::{assets::*, context::*, ui::layout::AreaOps};
 
 pub use anyhow::Result;
 pub use geng::prelude::*;

@@ -27,6 +27,7 @@ pub struct Model {
 
     pub train: Train,
     pub depo: Collider,
+    pub tunnels: Vec<Tunnel>,
     pub items: StructOf<Arena<Item>>,
     pub entities: StructOf<Arena<Entity>>,
     pub particles_queue: Vec<SpawnParticles>,
@@ -49,7 +50,7 @@ impl Model {
 
             money: 0,
 
-            phase: Phase::Setup,
+            phase: Phase::Starting,
             deck: Deck {
                 wagons: config.train.starter_wagons.clone(),
             },
@@ -64,6 +65,7 @@ impl Model {
                 fuel: Fuel::ZERO,
             },
             depo: Collider::aabb(Aabb2::ZERO),
+            tunnels: Vec::new(),
             items: default(),
             entities: default(),
             particles_queue: Vec::new(),

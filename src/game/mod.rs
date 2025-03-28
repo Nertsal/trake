@@ -78,7 +78,24 @@ impl GameState {
         }
     }
 
-    fn handle_mouse(&mut self, _button: geng::MouseButton) {}
+    fn handle_mouse(&mut self, button: geng::MouseButton) {
+        if let geng::MouseButton::Left = button {
+            self.left_mouse();
+        }
+    }
+
+    fn left_mouse(&mut self) {
+        if let Phase::Finished = self.model.phase {
+            if let Some(i) = self
+                .model
+                .tunnels
+                .iter()
+                .position(|tunnel| tunnel.collider.contains(self.cursor_world_pos))
+            {
+                self.model.choose_tunnel(i);
+            }
+        }
+    }
 }
 
 impl geng::State for GameState {

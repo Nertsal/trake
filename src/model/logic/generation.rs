@@ -8,7 +8,7 @@ impl Model {
         // Walls
         self.items = default();
 
-        self.generate_map(vec![TunnelEffect::Snow]);
+        self.generate_map(vec![]);
     }
 
     pub fn generate_map(&mut self, effects: Vec<TunnelEffect>) {

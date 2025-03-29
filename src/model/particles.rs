@@ -15,6 +15,7 @@ pub struct Particle {
     pub kind: ParticleKind,
     pub position: vec2<Coord>,
     pub radius: Coord,
+    pub size_function: SizeFunction,
     pub velocity: vec2<Coord>,
     pub lifetime: Bounded<FloatTime>,
 }
@@ -25,6 +26,7 @@ pub struct SpawnParticles {
     pub density: R32,
     pub distribution: ParticleDistribution,
     pub size: RangeInclusive<Coord>,
+    pub size_function: SizeFunction,
     pub velocity: vec2<Coord>,
     pub lifetime: RangeInclusive<FloatTime>,
 }
@@ -32,10 +34,18 @@ pub struct SpawnParticles {
 #[derive(Debug, Clone, Copy)]
 pub enum ParticleKind {
     Steam,
+    Wind,
     Wall,
     WagonDestroyed,
     WagonDamaged,
     Collect(ResourceKind),
+}
+
+#[derive(Default, Debug, Clone, Copy)]
+pub enum SizeFunction {
+    #[default]
+    Shrink,
+    GrowShrink,
 }
 
 #[derive(Debug, Clone)]
@@ -92,6 +102,7 @@ impl Default for SpawnParticles {
                 radius: r32(0.5),
             },
             size: r32(0.05)..=r32(0.15),
+            size_function: SizeFunction::Shrink,
             velocity: vec2::ZERO,
             lifetime: r32(0.5)..=r32(1.5),
         }
@@ -112,6 +123,7 @@ pub fn spawn_particles(options: SpawnParticles) -> impl Iterator<Item = Particle
                 kind: options.kind,
                 position,
                 radius,
+                size_function: options.size_function,
                 velocity,
                 lifetime: Bounded::new_max(lifetime),
             }

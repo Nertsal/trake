@@ -251,29 +251,37 @@ impl GameRender {
             pub i_color: Rgba<f32>,
             pub i_model_matrix: mat3<f32>,
         }
-        let instances: Vec<_> = query!(model.particles, (&kind, &position, &radius, &lifetime))
-            .map(|(kind, position, radius, lifetime)| {
-                let color = match kind {
-                    ParticleKind::Steam => palette.steam,
-                    ParticleKind::Wall => palette.wall,
-                    ParticleKind::WagonDestroyed => palette.wagon_bottom,
-                    ParticleKind::WagonDamaged => palette.team_enemy,
-                    ParticleKind::Collect(resource) => palette
-                        .resources
-                        .get(resource)
-                        .copied()
-                        .unwrap_or_else(|| Color::try_from("#ff00ff").unwrap()),
-                };
-                let t = lifetime.get_ratio().as_f32().sqrt();
-                let color = crate::util::with_alpha(color, t);
-                let transform =
-                    mat3::translate(position.as_f32()) * mat3::scale_uniform(radius.as_f32() * t);
-                ParticleInstance {
-                    i_color: color,
-                    i_model_matrix: transform,
-                }
-            })
-            .collect();
+        let instances: Vec<_> = query!(
+            model.particles,
+            (&kind, &position, &radius, &size_function, &lifetime)
+        )
+        .map(|(kind, position, radius, size_function, lifetime)| {
+            let color = match kind {
+                ParticleKind::Steam => palette.steam,
+                ParticleKind::Wind => palette.wind,
+                ParticleKind::Wall => palette.wall,
+                ParticleKind::WagonDestroyed => palette.wagon_bottom,
+                ParticleKind::WagonDamaged => palette.team_enemy,
+                ParticleKind::Collect(resource) => palette
+                    .resources
+                    .get(resource)
+                    .copied()
+                    .unwrap_or_else(|| Color::try_from("#ff00ff").unwrap()),
+            };
+            let t = lifetime.get_ratio().as_f32();
+            let t = match size_function {
+                SizeFunction::Shrink => t.sqrt(),
+                SizeFunction::GrowShrink => 1.0 - (t * 2.0 - 1.0).sqr(),
+            };
+            let color = crate::util::with_alpha(color, t);
+            let transform =
+                mat3::translate(position.as_f32()) * mat3::scale_uniform(radius.as_f32() * t);
+            ParticleInstance {
+                i_color: color,
+                i_model_matrix: transform,
+            }
+        })
+        .collect();
         let instances = ugli::VertexBuffer::new_dynamic(self.context.geng.ugli(), instances);
         ugli::draw(
             framebuffer,

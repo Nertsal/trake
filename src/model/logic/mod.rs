@@ -213,16 +213,28 @@ impl Model {
         }
     }
 
-    fn passive_particles(&mut self, _delta_time: FloatTime) {
-        for wall in query!(self.items, (&wall.Get.Some)) {
-            if wall.collider.check(&self.depo) {
-                continue;
-            }
+    fn passive_particles(&mut self, delta_time: FloatTime) {
+        let mut rng = thread_rng();
+
+        if self.wind != vec2::ZERO {
+            // Wind particles
+            let camera_view = self.camera.view_area(crate::GAME_RESOLUTION.as_f32());
+            let camera_view = Aabb2::from_corners(
+                (camera_view.transform * vec2(-1.0, -1.0).extend(1.0)).into_2d(),
+                (camera_view.transform * vec2(1.0, 1.0).extend(1.0)).into_2d(),
+            )
+            .as_r32();
+
+            let speed = r32(rng.gen_range(0.8..=1.2));
+            let angle = Angle::from_degrees(r32(rng.gen_range(-20.0..=20.0)));
+            let velocity = (self.wind * speed).rotate(angle);
+
             self.particles_queue.push(SpawnParticles {
-                kind: ParticleKind::Wall,
-                density: r32(0.5),
-                distribution: ParticleDistribution::Aabb(wall.collider.compute_aabb()),
-                size: r32(0.05)..=r32(0.1),
+                kind: ParticleKind::Wind,
+                density: r32(2.0 * delta_time.as_f32()),
+                distribution: ParticleDistribution::Aabb(camera_view.extend_uniform(r32(1.0))),
+                velocity,
+                size_function: SizeFunction::GrowShrink,
                 ..default()
             });
         }

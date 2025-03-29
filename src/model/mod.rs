@@ -15,6 +15,7 @@ pub struct Model {
 
     pub camera: Camera2d,
     pub map_bounds: Aabb2<Coord>,
+    pub wind: vec2<Coord>,
 
     pub real_time: FloatTime,
     pub simulation_time: FloatTime,
@@ -46,6 +47,7 @@ impl Model {
                 fov: Camera2dFov::Vertical(16.0),
             },
             map_bounds: Aabb2::ZERO.extend_positive(config.map_size),
+            wind: vec2::ZERO,
 
             real_time: FloatTime::ZERO,
             simulation_time: FloatTime::ZERO,

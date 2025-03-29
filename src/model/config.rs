@@ -17,7 +17,6 @@ pub struct TrainConfig {
 
     pub wagon_spacing: Coord,
 
-    pub overtime_slowdown: Coord,
     pub turn_speed: Angle<Coord>,
     pub speed: Coord,
     pub acceleration: Coord,

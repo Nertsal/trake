@@ -6,7 +6,6 @@
     train: (
         wagon_spacing: 0.15,
         turn_speed: 2.0,
-        overtime_slowdown: 0.3,
         speed: 5.0,
         acceleration: 1.0,
         deceleration: 2.0,
@@ -61,7 +60,7 @@
         prefix: [
             (
                 name: "Windy",
-                effects: [Wind],
+                effects: [Wind ( strength: 2.0 )],
             ),
             (
                 name: "Freezing",

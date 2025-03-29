@@ -521,20 +521,24 @@ impl Model {
         }
 
         // Acceleration
+        let wind = self.train.wagons.front().map_or(Coord::ZERO, |wagon| {
+            vec2::dot(wagon.collider.rotation.unit_vec(), self.wind)
+        });
         self.train.target_speed = if self.train.fuel > Fuel::ZERO {
             self.config.train.speed
         } else {
             Coord::ZERO
         };
-        let target = self.train.target_speed;
+        let target = (self.train.target_speed + wind).max(Coord::ZERO);
         let current_speed = self.train.train_speed;
         let acceleration = if target > current_speed {
             self.config.train.acceleration
         } else {
             self.config.train.deceleration
         };
-        self.train.train_speed =
-            current_speed + (target - current_speed).clamp_abs(acceleration * delta_time);
+        self.train.train_speed = current_speed
+            + ((target - current_speed) * acceleration.signum())
+                .clamp_abs(acceleration.abs() * delta_time);
 
         // Spend fuel
         self.train.fuel = (self.train.fuel - self.config.train.fuel_consumption * delta_time)

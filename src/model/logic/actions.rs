@@ -11,9 +11,7 @@ impl Model {
                         let mult = r32(1.2);
                         self.config.train.speed *= mult;
                     }
-                    Upgrade::Feather => {
-                        self.config.train.overtime_slowdown *= r32(0.9);
-                    }
+                    Upgrade::Feather => {}
                     Upgrade::Turning => {
                         let limit = Angle::from_radians(r32(4.0));
                         let s = &mut self.config.train.turn_speed;

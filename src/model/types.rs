@@ -124,7 +124,7 @@ pub struct Tunnel {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TunnelEffect {
     /// Strong wind.
-    Wind,
+    Wind { strength: R32 },
     /// Slippery snow piles on the map.
     Snow,
     /// Game time is sped up/slowed down.

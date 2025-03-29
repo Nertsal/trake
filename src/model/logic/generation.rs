@@ -18,11 +18,19 @@ impl Model {
 
         // Effects
         self.game_time_scale = FloatTime::ONE;
+        let mut wind_strength = Coord::ZERO;
         for effect in effects {
-            if let TunnelEffect::TimeWarp { time_scale } = effect {
-                self.game_time_scale *= time_scale;
+            match effect {
+                TunnelEffect::TimeWarp { time_scale } => {
+                    self.game_time_scale *= time_scale;
+                }
+                TunnelEffect::Wind { strength } => {
+                    wind_strength += strength;
+                }
+                _ => (),
             }
         }
+        self.wind = Angle::from_degrees(r32(rng.gen_range(0.0..=360.0))).unit_vec() * wind_strength;
 
         // Depo
         let size = self.config.depo_size;

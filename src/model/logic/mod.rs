@@ -281,18 +281,20 @@ impl Model {
                 (camera_view.transform * vec2(-1.0, -1.0).extend(1.0)).into_2d(),
                 (camera_view.transform * vec2(1.0, 1.0).extend(1.0)).into_2d(),
             )
-            .as_r32();
+            .as_r32()
+            .extend_uniform(r32(5.0));
 
-            let speed = r32(rng.gen_range(0.8..=1.2));
-            let angle = Angle::from_degrees(r32(rng.gen_range(-20.0..=20.0)));
+            let speed = r32(rng.gen_range(0.8..=1.2) + 1.0);
+            let angle = Angle::from_degrees(r32(rng.gen_range(-5.0..=5.0)));
             let velocity = (self.wind * speed).rotate(angle);
 
             self.particles_queue.push(SpawnParticles {
                 kind: ParticleKind::Wind,
                 density: r32(2.0) * delta_time,
-                distribution: ParticleDistribution::Aabb(camera_view.extend_uniform(r32(1.0))),
+                distribution: ParticleDistribution::Aabb(camera_view),
                 velocity,
                 size_function: SizeFunction::GrowShrink,
+                size: r32(0.03)..=r32(0.07),
                 ..default()
             });
         }

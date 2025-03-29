@@ -8,7 +8,7 @@ impl Model {
         // Walls
         self.items = default();
 
-        self.generate_map(vec![]);
+        self.generate_map(vec![TunnelEffect::Wind { strength: r32(3.0) }]);
     }
 
     pub fn generate_map(&mut self, effects: Vec<TunnelEffect>) {

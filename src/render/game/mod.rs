@@ -256,39 +256,59 @@ impl GameRender {
         struct ParticleInstance {
             pub i_color: Rgba<f32>,
             pub i_model_matrix: mat3<f32>,
+            pub i_circle: u8,
         }
         let instances: Vec<_> = query!(
             model.particles,
-            (&kind, &position, &radius, &size_function, &lifetime)
+            (
+                &kind,
+                &position,
+                &velocity,
+                &radius,
+                &size_function,
+                &lifetime
+            )
         )
-        .map(|(kind, position, radius, size_function, lifetime)| {
-            let color = match kind {
-                ParticleKind::Steam => palette.steam,
-                ParticleKind::Snow => palette.snow_particles,
-                ParticleKind::Wind => palette.wind,
-                ParticleKind::Wall => palette.wall,
-                ParticleKind::WagonDestroyed => palette.wagon_bottom,
-                ParticleKind::WagonDamaged => palette.team_enemy,
-                ParticleKind::WagonHealing => palette.wagon_heal,
-                ParticleKind::Collect(resource) => palette
-                    .resources
-                    .get(resource)
-                    .copied()
-                    .unwrap_or_else(|| Color::try_from("#ff00ff").unwrap()),
-            };
-            let t = lifetime.get_ratio().as_f32();
-            let t = match size_function {
-                SizeFunction::Shrink => t.sqrt(),
-                SizeFunction::GrowShrink => 1.0 - (t * 2.0 - 1.0).sqr(),
-            };
-            let color = crate::util::with_alpha(color, t);
-            let transform =
-                mat3::translate(position.as_f32()) * mat3::scale_uniform(radius.as_f32() * t);
-            ParticleInstance {
-                i_color: color,
-                i_model_matrix: transform,
-            }
-        })
+        .map(
+            |(kind, position, velocity, radius, size_function, lifetime)| {
+                let color = match kind {
+                    ParticleKind::Steam => palette.steam,
+                    ParticleKind::Snow => palette.snow_particles,
+                    ParticleKind::Wind => palette.wind,
+                    ParticleKind::Wall => palette.wall,
+                    ParticleKind::WagonDestroyed => palette.wagon_bottom,
+                    ParticleKind::WagonDamaged => palette.team_enemy,
+                    ParticleKind::WagonHealing => palette.wagon_heal,
+                    ParticleKind::Collect(resource) => palette
+                        .resources
+                        .get(resource)
+                        .copied()
+                        .unwrap_or_else(|| Color::try_from("#ff00ff").unwrap()),
+                };
+                let t = lifetime.get_ratio().as_f32();
+                let t = match size_function {
+                    SizeFunction::Shrink => t.sqrt(),
+                    SizeFunction::GrowShrink => 1.0 - (t * 2.0 - 1.0).sqr(),
+                };
+                let color = crate::util::with_alpha(color, t);
+                let mut transform =
+                    mat3::translate(position.as_f32()) * mat3::scale_uniform(radius.as_f32() * t);
+
+                let mut circle = 1;
+                if let ParticleKind::Wind = kind {
+                    circle = 0;
+                    transform = transform
+                        * mat3::rotate(velocity.arg().as_f32())
+                        * mat3::scale(vec2(velocity.len().as_f32(), 1.0));
+                }
+
+                ParticleInstance {
+                    i_color: color,
+                    i_model_matrix: transform,
+                    i_circle: circle,
+                }
+            },
+        )
         .collect();
         let instances = ugli::VertexBuffer::new_dynamic(self.context.geng.ugli(), instances);
         ugli::draw(

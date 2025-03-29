@@ -117,6 +117,30 @@ pub struct ShopItem {
 #[derive(Debug, Clone)]
 pub struct Tunnel {
     pub collider: Collider,
-    // TODO
-    // pub effects: Vec<TunnelEffect>,
+    pub name: Name,
+    pub effects: Vec<TunnelEffect>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum TunnelEffect {
+    /// Strong wind.
+    Wind,
+    /// Slippery snow piles on the map.
+    Snow,
+    /// Game time is sped up.
+    TimeWarp,
+    /// Big rocks on the map.
+    Rocks,
+    /// Enemy ambush.
+    Ambush,
+    /// Extra resource nodes of a specific kind.
+    ExtraResource(ResourceKind),
+    /// Repair station in the middle of the map.
+    RepairStation,
+    /// Random map.
+    Random,
+    /// Shop map.
+    Station,
+    /// Boss.
+    Boss,
 }

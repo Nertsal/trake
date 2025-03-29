@@ -193,36 +193,36 @@ impl geng::State for GameState {
             .draw_game_ui(&self.model, &self.ui_context, post_buffer);
 
         // Background
-        {
-            self.post_buffer.swap();
-            let post_buffer = &mut geng_utils::texture::attach_texture(
-                &mut self.post_buffer.active,
-                self.context.geng.ugli(),
-            );
-            let world_matrix = (self
-                .model
-                .camera
-                .projection_matrix(post_buffer.size().as_f32())
-                * self.model.camera.view_matrix())
-            .inverse();
-            ugli::draw(
-                post_buffer,
-                &self.context.assets.shaders.background,
-                ugli::DrawMode::TriangleFan,
-                &self.unit_quad,
-                ugli::uniforms! {
-                    u_texture: &self.post_buffer.second,
-                    u_time: self.model.real_time.as_f32(),
-                    u_mask_color: bg_color,
-                    u_mask2_color: bg_color,
-                    u_world_matrix: world_matrix,
-                },
-                ugli::DrawParameters {
-                    blend_mode: Some(ugli::BlendMode::straight_alpha()),
-                    ..default()
-                },
-            );
-        }
+        // {
+        //     self.post_buffer.swap();
+        //     let post_buffer = &mut geng_utils::texture::attach_texture(
+        //         &mut self.post_buffer.active,
+        //         self.context.geng.ugli(),
+        //     );
+        //     let world_matrix = (self
+        //         .model
+        //         .camera
+        //         .projection_matrix(post_buffer.size().as_f32())
+        //         * self.model.camera.view_matrix())
+        //     .inverse();
+        //     ugli::draw(
+        //         post_buffer,
+        //         &self.context.assets.shaders.background,
+        //         ugli::DrawMode::TriangleFan,
+        //         &self.unit_quad,
+        //         ugli::uniforms! {
+        //             u_texture: &self.post_buffer.second,
+        //             u_time: self.model.real_time.as_f32(),
+        //             u_mask_color: bg_color,
+        //             u_mask2_color: bg_color,
+        //             u_world_matrix: world_matrix,
+        //         },
+        //         ugli::DrawParameters {
+        //             blend_mode: Some(ugli::BlendMode::straight_alpha()),
+        //             ..default()
+        //         },
+        //     );
+        // }
 
         // Post
         self.context.geng.draw2d().textured_quad(

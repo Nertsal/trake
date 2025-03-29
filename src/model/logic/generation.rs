@@ -46,9 +46,20 @@ impl Model {
         self.train.fuel = self.train.fuel_capacity();
 
         // Tunnels
-        let tunnels = [Tunnel {
-            collider: Collider::circle(vec2::ZERO, Coord::ZERO),
-        }];
+        let combine_presets = |prefix: &TunnelPreset, suffix: &TunnelPreset| {
+            let mut effects = prefix.effects.clone();
+            effects.extend(suffix.effects.iter().cloned());
+            Tunnel {
+                collider: Collider::circle(vec2::ZERO, Coord::ZERO),
+                name: format!("{} {} tunnel", prefix.name, suffix.name).into(),
+                effects,
+            }
+        };
+
+        let tunnels = [combine_presets(
+            self.config.tunnels.prefix.choose(&mut rng).unwrap(),
+            self.config.tunnels.suffix.choose(&mut rng).unwrap(),
+        )];
         let n = tunnels.len();
         self.tunnels = tunnels
             .into_iter()

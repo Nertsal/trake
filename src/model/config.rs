@@ -1,13 +1,14 @@
 use super::*;
 
 #[derive(geng::asset::Load, Debug, Clone, Serialize, Deserialize)]
-#[load(serde = "toml")]
+#[load(serde = "ron")]
 pub struct Config {
     pub map_size: vec2<Coord>,
     pub depo_size: vec2<Coord>,
     pub train: TrainConfig,
     pub resource: ResourcesConfig,
     pub resources: HashMap<ResourceKind, ResourceConfig>,
+    pub tunnels: TunnelsConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -40,4 +41,17 @@ pub struct ResourceConfig {
     pub speed: R32,
     /// How many resources to transfer per single collection.
     pub per_collection: ResourceCount,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TunnelsConfig {
+    pub prefix: Vec<TunnelPreset>,
+    pub suffix: Vec<TunnelPreset>,
+    pub special: Vec<TunnelPreset>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TunnelPreset {
+    pub name: Name,
+    pub effects: Vec<TunnelEffect>,
 }

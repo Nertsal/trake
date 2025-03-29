@@ -132,10 +132,10 @@ impl GameUi {
                 }
             }
 
+            let mut pos = left_bar.cut_bottom(font_size * 2.0);
             if let Some(upgrade) = hovered_upgrade {
-                let mut pos = left_bar.cut_bottom(font_size * 2.0);
                 pos.cut_left(font_size * 4.0);
-                pos = pos.with_width(font_size * 10.0, 0.0);
+                pos = pos.with_width(font_size * 20.0, 0.0);
                 let text = context
                     .state
                     .get_root_or(|| TextWidget::new("").aligned(vec2(0.0, 0.5)));
@@ -148,6 +148,25 @@ impl GameUi {
                 }
                 .into();
                 text.update(pos, context);
+            }
+        }
+
+        // Tunnels
+        {
+            let mut tunnels = left_bar
+                .cut_bottom(font_size * 3.0)
+                .with_width(font_size * 10.0, 0.5);
+
+            if let Phase::Finished = model.phase {
+                for (i, tunnel) in model.tunnels.iter().enumerate() {
+                    let pos = tunnels.cut_bottom(font_size * 1.5);
+                    let button = context.state.get_root_or(|| ButtonWidget::new(""));
+                    button.text.text = tunnel.name.clone();
+                    button.update(pos, context);
+                    if button.text.state.clicked {
+                        actions.push(GameAction::ChooseTunnel(i));
+                    }
+                }
             }
         }
 

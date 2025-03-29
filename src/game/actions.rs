@@ -4,6 +4,7 @@ use super::*;
 pub enum GameAction {
     LaunchTrain,
     BuyShop(usize),
+    ChooseTunnel(usize),
 }
 
 impl GameState {
@@ -12,6 +13,7 @@ impl GameState {
         match action {
             GameAction::LaunchTrain => self.model.launch_train(),
             GameAction::BuyShop(i) => self.model.buy_shop(i),
+            GameAction::ChooseTunnel(i) => self.model.choose_tunnel(i),
         }
     }
 }

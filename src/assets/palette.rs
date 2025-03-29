@@ -15,6 +15,8 @@ pub struct Palette {
     pub wall: Color,
     pub steam: Color,
     pub wind: Color,
+    pub snow: Color,
+    pub snow_particles: Color,
 
     pub team_player: Color,
     pub team_enemy: Color,

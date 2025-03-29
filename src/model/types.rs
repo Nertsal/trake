@@ -78,6 +78,7 @@ pub struct Entity {
     pub team: Option<Team>,
     pub damage_on_collision: Option<Hp>,
     pub ai: Option<EntityAi>,
+    pub snow: Option<()>,
 }
 
 #[derive(SplitFields, Debug, Clone)]

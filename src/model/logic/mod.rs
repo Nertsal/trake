@@ -102,6 +102,7 @@ impl Model {
                             team: *team,
                             damage_on_collision: Some(ai.bullet_damage),
                             ai: None,
+                            snow: None,
                         });
                     }
                 }
@@ -119,11 +120,11 @@ impl Model {
         }
 
         // Collisions
-        for (team, collider, health, collision_damage) in query!(
+        for (team, collider, health, collision_damage, snow) in query!(
             self.entities,
-            (&team, &collider, &mut health, &damage_on_collision)
+            (&team, &collider, &mut health, &damage_on_collision, &snow)
         ) {
-            if let Some(Team::Enemy) = team {
+            if *team != Some(Team::Player) {
                 // Collide with train
                 for wagon in &mut self.train.wagons {
                     if let Some(collision) = wagon.collider.collide(collider) {
@@ -133,16 +134,39 @@ impl Model {
                         if let Some(health) = health {
                             health.change(-self.train.head_damage);
                         }
-                        self.particles_queue.push(SpawnParticles {
-                            kind: ParticleKind::WagonDamaged,
-                            density: r32(10.0),
-                            distribution: ParticleDistribution::Circle {
-                                center: collision.point,
-                                radius: r32(0.4),
-                            },
-                            velocity: vec2(0.0, 1.0).as_r32(),
-                            ..default()
-                        });
+                        if collision_damage.is_some() || health.is_some() {
+                            self.particles_queue.push(SpawnParticles {
+                                kind: ParticleKind::WagonDamaged,
+                                density: r32(20.0),
+                                distribution: ParticleDistribution::Circle {
+                                    center: collision.point,
+                                    radius: r32(0.6),
+                                },
+                                velocity: vec2(0.0, 1.0).as_r32(),
+                                ..default()
+                            });
+                        }
+                        if snow.is_some() {
+                            // let position = wagon.collider.position
+                            //     + wagon.collider.rotation.unit_vec() * wagon.status.size.x
+                            //         / r32(2.0);
+                            let position = collision.point;
+                            let angle = Angle::from_degrees(r32(rng.gen_range(-60.0..=60.0)));
+                            let speed = self.train.train_speed * r32(rng.gen_range(0.9..=1.2));
+                            let velocity = (wagon.collider.rotation + angle).unit_vec() * speed;
+                            self.particles_queue.push(SpawnParticles {
+                                kind: ParticleKind::Snow,
+                                density: r32(100.0) * delta_time,
+                                distribution: ParticleDistribution::Circle {
+                                    center: position,
+                                    radius: r32(0.3),
+                                },
+                                velocity,
+                                size: r32(0.1)..=r32(0.15),
+                                lifetime: r32(0.2)..=r32(0.7),
+                                ..default()
+                            });
+                        }
                         break;
                     }
                 }
@@ -194,9 +218,13 @@ impl Model {
             let item = self.items.remove(id).unwrap();
             let resource = item.resource.unwrap();
             if let Some(data) = self.config.resources.get(&resource.kind).cloned() {
-                if let Some(position) =
-                    generation::select_position(&mut rng, self.map_bounds, r32(0.5), &self.items)
-                {
+                if let Some(position) = generation::select_position(
+                    &mut rng,
+                    self.map_bounds,
+                    r32(0.5),
+                    &self.items,
+                    &self.entities,
+                ) {
                     self.items.insert(Item {
                         position,
                         resource: Some(ResourceNode {
@@ -231,7 +259,7 @@ impl Model {
 
             self.particles_queue.push(SpawnParticles {
                 kind: ParticleKind::Wind,
-                density: r32(2.0 * delta_time.as_f32()),
+                density: r32(2.0) * delta_time,
                 distribution: ParticleDistribution::Aabb(camera_view.extend_uniform(r32(1.0))),
                 velocity,
                 size_function: SizeFunction::GrowShrink,
@@ -479,18 +507,6 @@ impl Model {
             return;
         }
 
-        let move_head = |wagon: &mut Wagon, player_input: &PlayerInput| {
-            // Turn by player input
-            wagon.collider.rotation += self.config.train.turn_speed
-                * player_input.turn
-                * delta_time
-                * self.train.train_speed.min(Coord::ONE);
-
-            // Movement
-            wagon.collider.position +=
-                wagon.collider.rotation.unit_vec() * self.train.train_speed * delta_time;
-        };
-
         let move_wagon = |head: &mut Wagon, wagon: &mut Wagon| {
             let radius = |block: &Wagon| match block.collider.shape {
                 Shape::Circle { radius } => radius,
@@ -509,6 +525,7 @@ impl Model {
         let mut blocks = self.train.wagons.iter_mut();
         if let Some(mut head) = blocks.next() {
             if self.train.fuel > Fuel::ZERO {
+                // Smoke
                 self.particles_queue.push(SpawnParticles {
                     kind: ParticleKind::Steam,
                     density: r32(4.0) * self.train.fuel.clamp(r32(0.5), r32(5.0)),
@@ -524,7 +541,25 @@ impl Model {
                     ..default()
                 });
             }
-            move_head(head, player_input);
+
+            // Check snow
+            let mut turn_speed = Coord::ONE;
+            if query!(self.entities, (&collider, &snow.Get.Some))
+                .any(|(collider, ())| head.collider.check(collider))
+            {
+                turn_speed = Coord::ZERO;
+            }
+
+            // Turn by player input
+            head.collider.rotation += self.config.train.turn_speed
+                * turn_speed
+                * player_input.turn
+                * delta_time
+                * self.train.train_speed.min(Coord::ONE);
+
+            // Movement
+            head.collider.position +=
+                head.collider.rotation.unit_vec() * self.train.train_speed * delta_time;
 
             for block in blocks {
                 move_wagon(head, block);

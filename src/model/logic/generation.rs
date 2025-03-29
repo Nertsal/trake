@@ -8,7 +8,7 @@ impl Model {
         // Walls
         self.items = default();
 
-        self.generate_map(vec![]);
+        self.generate_map(vec![TunnelEffect::Snow]);
     }
 
     pub fn generate_map(&mut self, effects: Vec<TunnelEffect>) {
@@ -19,6 +19,8 @@ impl Model {
         // Effects
         self.game_time_scale = FloatTime::ONE;
         let mut wind_strength = Coord::ZERO;
+        let mut snow = 0;
+        let mut rocks = 0;
         for effect in effects {
             match effect {
                 TunnelEffect::TimeWarp { time_scale } => {
@@ -26,6 +28,12 @@ impl Model {
                 }
                 TunnelEffect::Wind { strength } => {
                     wind_strength += strength;
+                }
+                TunnelEffect::Snow => {
+                    snow += 2;
+                }
+                TunnelEffect::Rocks => {
+                    rocks += 2;
                 }
                 _ => (),
             }
@@ -72,13 +80,14 @@ impl Model {
             }
         };
 
-        let tunnels = [combine_presets(
-            self.config.tunnels.prefix.choose(&mut rng).unwrap(),
-            self.config.tunnels.suffix.choose(&mut rng).unwrap(),
-        )];
+        let tunnels = (0..3).map(|_| {
+            combine_presets(
+                self.config.tunnels.prefix.choose(&mut rng).unwrap(),
+                self.config.tunnels.suffix.choose(&mut rng).unwrap(),
+            )
+        });
         let n = tunnels.len();
         self.tunnels = tunnels
-            .into_iter()
             .enumerate()
             .map(|(i, tunnel)| {
                 let t = (i as f32 + 1.0) / (n as f32 + 1.0);
@@ -99,11 +108,15 @@ impl Model {
         self.items = default();
         self.entities = default();
 
-        // Spawn items
+        // Spawn resource nodes
         for (&kind, config) in &self.config.resources {
-            if let Some(position) =
-                select_position(&mut rng, self.map_bounds, r32(0.5), &self.items)
-            {
+            if let Some(position) = select_position(
+                &mut rng,
+                self.map_bounds,
+                r32(0.5),
+                &self.items,
+                &self.entities,
+            ) {
                 let config = config.clone();
                 self.items.insert(Item {
                     position,
@@ -119,11 +132,56 @@ impl Model {
             }
         }
 
+        // Spawn rocks
+        for _ in 0..rocks {
+            let radius = r32(1.0);
+            if let Some(position) = select_position(
+                &mut rng,
+                self.map_bounds,
+                radius,
+                &self.items,
+                &self.entities,
+            ) {
+                self.entities.insert(Entity {
+                    collider: Collider::circle(position, radius),
+                    velocity: vec2::ZERO,
+                    health: Some(Bounded::new_max(r32(0.1))),
+                    team: None,
+                    damage_on_collision: Some(r32(3.0)),
+                    ai: None,
+                    snow: None,
+                });
+            }
+        }
+
+        // Spawn snow
+        for _ in 0..snow {
+            let radius = r32(0.8);
+            let area = self.map_bounds.extend_uniform(-radius);
+            let position = vec2(
+                rng.gen_range(area.min.x..=area.max.x),
+                rng.gen_range(area.min.y..=area.max.y),
+            );
+            self.entities.insert(Entity {
+                collider: Collider::circle(position, radius),
+                velocity: vec2::ZERO,
+                health: None,
+                team: None,
+                damage_on_collision: None,
+                ai: None,
+                snow: Some(()),
+            });
+        }
+
         // Spawn enemies
         for _ in 0..2 {
-            if let Some(position) =
-                select_position(&mut rng, self.map_bounds, r32(1.0), &self.items)
-            {
+            if let Some(position) = select_position(
+                &mut rng,
+                self.map_bounds,
+                r32(1.0),
+                &self.items,
+                &self.entities,
+            ) {
                 self.entities.insert(Entity {
                     collider: Collider::circle(position, r32(0.3)),
                     velocity: vec2::ZERO,
@@ -137,6 +195,7 @@ impl Model {
                         bullet_speed: r32(5.0),
                         bullet_damage: r32(4.0),
                     })),
+                    snow: None,
                 });
             }
         }
@@ -175,6 +234,7 @@ pub fn select_position(
     map_bounds: Aabb2<Coord>,
     radius: Coord,
     items: &StructOf<Arena<Item>>,
+    entities: &StructOf<Arena<Entity>>,
 ) -> Option<vec2<Coord>> {
     let area = map_bounds.extend_uniform(-radius);
     for _ in 0..10 {
@@ -183,6 +243,9 @@ pub fn select_position(
             rng.gen_range(area.min.y..=area.max.y),
         );
         if query!(items, (&position)).any(|&other_pos| (pos - other_pos).len() < radius) {
+            continue;
+        }
+        if query!(entities, (&collider)).any(|coll| (pos - coll.position).len() < radius) {
             continue;
         }
         return Some(pos);

@@ -140,6 +140,21 @@ impl GameRender {
             );
         }
 
+        // Entities
+        for (team, collider, snow) in query!(model.entities, (&team, &collider, &snow)) {
+            let color = if snow.is_some() {
+                palette.snow
+            } else {
+                match team {
+                    Some(Team::Player) => palette.team_player,
+                    Some(Team::Enemy) => palette.team_enemy,
+                    None => palette.team_neutral,
+                }
+            };
+            self.util
+                .draw_collider(collider, color, &model.camera, framebuffer)
+        }
+
         // Train
         for wagon in &model.train.wagons {
             let size = match wagon.collider.shape {
@@ -220,17 +235,6 @@ impl GameRender {
             }
         }
 
-        // Entities
-        for (team, collider) in query!(model.entities, (&team, &collider)) {
-            let color = match team {
-                Some(Team::Player) => palette.team_player,
-                Some(Team::Enemy) => palette.team_enemy,
-                None => palette.team_neutral,
-            };
-            self.util
-                .draw_collider(collider, color, &model.camera, framebuffer)
-        }
-
         // Wagon range circles
         for wagon in &model.train.wagons {
             if let Some(collect) = &wagon.status.collect {
@@ -258,6 +262,7 @@ impl GameRender {
         .map(|(kind, position, radius, size_function, lifetime)| {
             let color = match kind {
                 ParticleKind::Steam => palette.steam,
+                ParticleKind::Snow => palette.snow_particles,
                 ParticleKind::Wind => palette.wind,
                 ParticleKind::Wall => palette.wall,
                 ParticleKind::WagonDestroyed => palette.wagon_bottom,

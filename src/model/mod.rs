@@ -17,7 +17,9 @@ pub struct Model {
     pub map_bounds: Aabb2<Coord>,
 
     pub real_time: FloatTime,
-    pub round_time: FloatTime,
+    pub simulation_time: FloatTime,
+    pub round_simulation_time: FloatTime,
+    pub game_time_scale: FloatTime,
 
     pub money: Money,
 
@@ -46,7 +48,9 @@ impl Model {
             map_bounds: Aabb2::ZERO.extend_positive(config.map_size),
 
             real_time: FloatTime::ZERO,
-            round_time: FloatTime::ZERO,
+            simulation_time: FloatTime::ZERO,
+            round_simulation_time: FloatTime::ZERO,
+            game_time_scale: FloatTime::ONE,
 
             money: 0,
 

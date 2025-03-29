@@ -8,13 +8,21 @@ impl Model {
         // Walls
         self.items = default();
 
-        self.generate_map();
+        self.generate_map(vec![]);
     }
 
-    pub fn generate_map(&mut self) {
+    pub fn generate_map(&mut self, effects: Vec<TunnelEffect>) {
         log::debug!("Generating the map...");
-        self.round_time = FloatTime::ZERO;
+        self.round_simulation_time = FloatTime::ZERO;
         let mut rng = thread_rng();
+
+        // Effects
+        self.game_time_scale = FloatTime::ONE;
+        for effect in effects {
+            if let TunnelEffect::TimeWarp { time_scale } = effect {
+                self.game_time_scale *= time_scale;
+            }
+        }
 
         // Depo
         let size = self.config.depo_size;

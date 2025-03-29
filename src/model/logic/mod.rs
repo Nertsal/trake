@@ -6,6 +6,8 @@ use super::*;
 impl Model {
     pub fn update(&mut self, delta_time: FloatTime, player_input: PlayerInput) {
         self.real_time += delta_time;
+        let sim_delta_time = delta_time * self.game_time_scale;
+        self.simulation_time += sim_delta_time;
 
         self.context
             .music
@@ -14,22 +16,22 @@ impl Model {
         match self.phase {
             Phase::Starting => {}
             Phase::Action => {
-                self.round_time += delta_time;
-                self.move_train(delta_time, &player_input);
-                self.collect_resources(delta_time);
-                self.collide_train(delta_time);
+                self.round_simulation_time += sim_delta_time;
+                self.move_train(sim_delta_time, &player_input);
+                self.collect_resources(sim_delta_time);
+                self.collide_train(sim_delta_time);
             }
             Phase::Finished => {}
             Phase::Leaving { tunnel } => {
-                self.check_tunnel(tunnel, delta_time);
+                self.check_tunnel(tunnel, sim_delta_time);
             }
         }
 
-        self.update_entities(delta_time);
-        self.update_train(delta_time);
-        self.update_resources(delta_time);
-        self.passive_particles(delta_time);
-        self.process_particles(delta_time);
+        self.update_entities(sim_delta_time);
+        self.update_train(sim_delta_time);
+        self.update_resources(sim_delta_time);
+        self.passive_particles(sim_delta_time);
+        self.process_particles(sim_delta_time);
     }
 
     fn game_over(&mut self) {
@@ -48,8 +50,7 @@ impl Model {
     }
 
     fn next_map(&mut self, tunnel: Tunnel) {
-        // TODO: effects
-        self.generate_map();
+        self.generate_map(tunnel.effects);
     }
 
     fn check_tunnel(&mut self, tunnel: usize, _delta_time: FloatTime) {
@@ -386,7 +387,7 @@ impl Model {
             // Ignore wall collisions, go to depo
             if !self.train.in_depo {
                 // TODO: idk
-                self.generate_map();
+                self.generate_map(vec![]);
             }
             return;
         }

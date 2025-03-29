@@ -69,7 +69,7 @@
             ),
             (
                 name: "Time",
-                effects: [TimeWarp],
+                effects: [TimeWarp ( time_scale: 1.5 )],
             ),
             (
                 name: "Rocky",

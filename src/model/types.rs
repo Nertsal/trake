@@ -127,8 +127,8 @@ pub enum TunnelEffect {
     Wind,
     /// Slippery snow piles on the map.
     Snow,
-    /// Game time is sped up.
-    TimeWarp,
+    /// Game time is sped up/slowed down.
+    TimeWarp { time_scale: FloatTime },
     /// Big rocks on the map.
     Rocks,
     /// Enemy ambush.

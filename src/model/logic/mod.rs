@@ -106,6 +106,36 @@ impl Model {
                         });
                     }
                 }
+                EntityAi::RepairStation {
+                    range,
+                    heal_per_second,
+                } => {
+                    // Find a target
+                    if let Some((_dist, wagon)) = self
+                        .train
+                        .wagons
+                        .iter_mut()
+                        .filter(|wagon| !wagon.status.health.is_max())
+                        .map(|wagon| ((wagon.collider.position - collider.position).len(), wagon))
+                        .filter(|(dist, _)| *dist <= *range)
+                        .min_by_key(|(dist, _)| *dist)
+                    {
+                        wagon.status.health.change(*heal_per_second * delta_time);
+
+                        let delta = wagon.collider.position - collider.position;
+                        self.particles_queue.push(SpawnParticles {
+                            kind: ParticleKind::WagonHealing,
+                            density: r32(100.0) * delta_time,
+                            distribution: ParticleDistribution::Circle {
+                                center: collider.position,
+                                radius: r32(0.3),
+                            },
+                            velocity: delta / r32(0.4),
+                            lifetime: r32(0.4)..=r32(0.5),
+                            ..default()
+                        });
+                    }
+                }
             }
         }
 
@@ -338,7 +368,7 @@ impl Model {
                     let delta = position - wagon.collider.position;
                     self.particles_queue.push(SpawnParticles {
                         kind: ParticleKind::WagonDestroyed,
-                        density: r32(2.0),
+                        density: r32(120.0) * delta_time,
                         distribution: ParticleDistribution::Circle {
                             center: wagon.collider.position,
                             radius: r32(0.2),

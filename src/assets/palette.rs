@@ -11,6 +11,7 @@ pub struct Palette {
     pub background: Color,
     pub wagon_bottom: Color,
     pub wagon_top: Color,
+    pub wagon_heal: Color,
     pub range_circle: Color,
     pub wall: Color,
     pub steam: Color,

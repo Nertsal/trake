@@ -49,6 +49,7 @@ pub struct Wall {
 #[derive(Debug, Clone)]
 pub enum EntityAi {
     Shooter(ShooterAi),
+    RepairStation { range: Coord, heal_per_second: Hp },
 }
 
 #[derive(Debug, Clone)]

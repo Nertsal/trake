@@ -141,9 +141,11 @@ impl GameRender {
         }
 
         // Entities
-        for (team, collider, snow) in query!(model.entities, (&team, &collider, &snow)) {
+        for (team, collider, snow, ai) in query!(model.entities, (&team, &collider, &snow, &ai)) {
             let color = if snow.is_some() {
                 palette.snow
+            } else if let Some(EntityAi::RepairStation { .. }) = ai {
+                palette.wagon_heal
             } else {
                 match team {
                     Some(Team::Player) => palette.team_player,
@@ -267,6 +269,7 @@ impl GameRender {
                 ParticleKind::Wall => palette.wall,
                 ParticleKind::WagonDestroyed => palette.wagon_bottom,
                 ParticleKind::WagonDamaged => palette.team_enemy,
+                ParticleKind::WagonHealing => palette.wagon_heal,
                 ParticleKind::Collect(resource) => palette
                     .resources
                     .get(resource)

@@ -24,6 +24,7 @@ impl Model {
         let mut wind_strength = Coord::ZERO;
         let mut snow = 0;
         let mut rocks = 0;
+        let mut repair_station = false;
         for effect in effects {
             match effect {
                 TunnelEffect::TimeWarp { time_scale } => {
@@ -44,6 +45,9 @@ impl Model {
                     } else {
                         log::error!("Missing configuration for resource {:?}", resource);
                     }
+                }
+                TunnelEffect::RepairStation => {
+                    repair_station = true;
                 }
                 _ => (),
             }
@@ -142,6 +146,22 @@ impl Model {
                     });
                 }
             }
+        }
+
+        // Repair station
+        if repair_station {
+            self.entities.insert(Entity {
+                collider: Collider::circle(self.map_bounds.center(), r32(0.4)),
+                velocity: vec2::ZERO,
+                health: None,
+                team: None,
+                damage_on_collision: None,
+                ai: Some(EntityAi::RepairStation {
+                    range: r32(2.5),
+                    heal_per_second: r32(2.5),
+                }),
+                snow: None,
+            });
         }
 
         // Spawn rocks

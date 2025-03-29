@@ -39,6 +39,7 @@ pub enum ParticleKind {
     Snow,
     WagonDestroyed,
     WagonDamaged,
+    WagonHealing,
     Collect(ResourceKind),
 }
 

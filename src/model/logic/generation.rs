@@ -16,6 +16,9 @@ impl Model {
         self.round_simulation_time = FloatTime::ZERO;
         let mut rng = thread_rng();
 
+        let mut resource_node_spawns: HashMap<ResourceKind, usize> =
+            self.config.resources.keys().map(|&res| (res, 1)).collect();
+
         // Effects
         self.game_time_scale = FloatTime::ONE;
         let mut wind_strength = Coord::ZERO;
@@ -34,6 +37,13 @@ impl Model {
                 }
                 TunnelEffect::Rocks => {
                     rocks += 2;
+                }
+                TunnelEffect::ExtraResource(resource) => {
+                    if let Some(count) = resource_node_spawns.get_mut(&resource) {
+                        *count += 1;
+                    } else {
+                        log::error!("Missing configuration for resource {:?}", resource);
+                    }
                 }
                 _ => (),
             }
@@ -110,25 +120,27 @@ impl Model {
 
         // Spawn resource nodes
         for (&kind, config) in &self.config.resources {
-            if let Some(position) = select_position(
-                &mut rng,
-                self.map_bounds,
-                r32(0.5),
-                &self.items,
-                &self.entities,
-            ) {
-                let config = config.clone();
-                self.items.insert(Item {
-                    position,
-                    resource: Some(ResourceNode {
-                        kind,
-                        data: config,
-                        state: ResourceNodeState::Spawning(Bounded::new_zero(
-                            self.config.resource.spawn_time,
-                        )),
-                    }),
-                    wall: None,
-                });
+            for _ in 0..resource_node_spawns[&kind] {
+                if let Some(position) = select_position(
+                    &mut rng,
+                    self.map_bounds,
+                    r32(0.5),
+                    &self.items,
+                    &self.entities,
+                ) {
+                    let config = config.clone();
+                    self.items.insert(Item {
+                        position,
+                        resource: Some(ResourceNode {
+                            kind,
+                            data: config,
+                            state: ResourceNodeState::Spawning(Bounded::new_zero(
+                                self.config.resource.spawn_time,
+                            )),
+                        }),
+                        wall: None,
+                    });
+                }
             }
         }
 

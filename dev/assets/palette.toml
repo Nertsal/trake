@@ -1,0 +1,27 @@
+default_color = "#FF00FF"
+background = "#181E2E"
+wagon_top = "#8595A8"
+wagon_bottom = "#090F1E"
+wagon_heal = "#357985"
+range_circle = "#FFF7F8"
+wall = "#AB1F65"
+steam = "#5D6475AA"
+wind = "#5D647577"
+snow = "#DFEDED"
+snow_particles = "#728794"
+
+team_player = "#FF00FF"
+team_enemy = "#FF4F69"
+team_neutral = "#FF00FF"
+
+text_positive = "#357985"
+text_negative = "#FF4F69"
+
+dark = "#2B0F54"
+light = "#FFF7F8"
+highlight = "#49E7EC"
+
+[resources]
+Wood = "#66333D"
+Coal = "#57404E"
+Food = "#FFD3A3"

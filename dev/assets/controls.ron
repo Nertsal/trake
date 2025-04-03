@@ -1,0 +1,5 @@
+Controls(
+    turn_left: [Key(A), Key(ArrowLeft)],
+    turn_right: [Key(D), Key(ArrowRight)],
+    launch: [Key(Space)],
+)

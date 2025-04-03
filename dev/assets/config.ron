@@ -1,0 +1,119 @@
+#![enable(implicit_some)]
+(
+    map_size: (15.0, 15.0),
+    depo_size: (1.6, 3.2),
+
+    train: (
+        wagon_spacing: 0.15,
+        turn_speed: 2.0,
+        speed: 5.0,
+        acceleration: 1.0,
+        deceleration: 2.0,
+        fuel_consumption: 1.0,
+        head_damage: 10.0,
+
+        starter_wagons: [
+            (
+                size: (0.9, 0.45),
+                max_health: 10.0,
+                fuel_capacity: 10.0,
+            ),
+            (
+                size: (0.9, 0.45),
+                max_health: 10.0,
+                fuel_capacity: 2.0,
+                collect: (
+                    resource: Food,
+                    range: 2.5,
+                    speed: 1.0,
+                    capacity: 15,
+                )
+            ),
+        ],
+    ),
+
+    resource: (
+        spawn_time: 1.0,
+    ),
+    resources: {
+        Wood: (
+            value: 0.5,
+            amount: 30,
+            speed: 2.0,
+            per_collection: 10,
+        ),
+        Coal: (
+            value: 0.75,
+            amount: 8,
+            speed: 1.6,
+            per_collection: 4,
+        ),
+        Food: (
+            value: 1.0,
+            amount: 30,
+            speed: 2.0,
+            per_collection: 10,
+        ),
+    },
+
+    tunnels: (
+        prefix: [
+            (
+                name: "Windy",
+                effects: [Wind ( strength: 2.0 )],
+            ),
+            (
+                name: "Freezing",
+                effects: [Snow],
+            ),
+            (
+                name: "Time",
+                effects: [TimeWarp ( time_scale: 1.5 )],
+            ),
+            (
+                name: "Rocky",
+                effects: [Rocks],
+            ),
+            (
+                name: "Quiet",
+                effects: [Ambush],
+            ),
+        ],
+        suffix: [
+            (
+                name: "Mining sign",
+                effects: [ExtraResource(Coal)],
+            ),
+            (
+                name: "Timber sign",
+                effects: [ExtraResource(Wood)],
+            ),
+            (
+                name: "Farm sign",
+                effects: [ExtraResource(Food)],
+            ),
+            // (
+            //     name: "Chest sign",
+            //     effects: [ExtraResource(Gem)],
+            // ),
+            (
+                name: "Repair sign",
+                effects: [RepairStation],
+            ),
+        ],
+        special: [
+            (
+                name: "Normal",
+                effects: [],
+            ),
+            (
+                name: "Station",
+                effects: [Station],
+            ),
+            (
+                name: "Skull",
+                effects: [Boss],
+            ),
+        ]
+    ),
+)
